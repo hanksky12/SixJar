@@ -1,11 +1,13 @@
 {% extends "common/form_base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
 
 
 {% block title %}
 登入
 {% endblock %}
 
+{% block section2 %}
+<a href={{url_for("user.register")}}>想要註冊！！</a>
+{% endblock %}
 
 
 

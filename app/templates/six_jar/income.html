@@ -2,8 +2,19 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 
+
+
+
 {% block title %}
-收入
+手動分配收入
+{% endblock %}
+
+{% block section2 %}
+
+<h1 class="text-primary">自動分配收入</h1>
+
+{{ wtf.quick_form(form2, form_type="horizontal", horizontal_columns=('sm', 3, 8))}}
+
 {% endblock %}
 
 
