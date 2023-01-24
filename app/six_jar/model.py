@@ -1,3 +1,4 @@
+
 from .. import db, FlaskApp
 
 
@@ -31,12 +32,12 @@ class Jars:
     def names():
         app = FlaskApp().app
         with app.app_context():
-            return [jar.name for jar in Jar.query.all()]
-
-    @staticmethod
-    def names_dict():
-        return {jar.name:jar.id for jar in Jar.query.all()}
+            return [jar.name for jar in Jar.query.order_by(Jar.id).all()]
 
     @staticmethod
     def length():
         return len(Jar.query.all())
+
+    @staticmethod
+    def ratio():
+        return [jar.distribution_ratio/100 for jar in Jar.query.order_by(Jar.id).all()]

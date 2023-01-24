@@ -18,18 +18,17 @@ class AbstractIncomeAndExpenseForm(FlaskForm):
                      validators=[DataRequired()])
     money = IntegerField('金額', default=0, validators=[
         validators.NumberRange(min=1),
-
         DataRequired()])
 
     remark = TextAreaField('備註', validators=[validators.Length(0, 50)])
 
 
 class AutomaticDistributionIncomeForm(AbstractIncomeAndExpenseForm):
-    submit = SubmitField('自動分配收入')
+    auto_submit = SubmitField('自動分配收入')
 
 
 class ManuallyDistributeIncomeForm(JarForm, AbstractIncomeAndExpenseForm):
-    submit = SubmitField('手動分配收入')
+    manu_submit = SubmitField('手動分配收入')
 
 
 class ManuallyDistributeExpenseForm(JarForm, AbstractIncomeAndExpenseForm):

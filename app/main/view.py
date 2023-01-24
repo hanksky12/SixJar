@@ -9,6 +9,28 @@ from flask_jwt_extended import \
 from . import main_bp
 from .. import db
 
+
+from webargs.flaskparser import  parser, abort
+
+@parser.error_handler
+def handle_request_parsing_error(err, req, schema, error_status_code, error_headers):
+    """webargs error handler that uses Flask-RESTful's abort function to return
+    a JSON error response to the client.
+    """
+    status_code = error_status_code or 400
+    abort(status_code, errors=err.messages)
+
+
+
+@main_bp.app_errorhandler(404)
+def page_not_found(err):
+    return render_template('main/404.html'),404
+
+
+@main_bp.app_errorhandler(500)
+def internal_server_error(err):
+    return render_template('main/500.html'),500
+
 @main_bp.route('/')
 def index():
     return render_template('main/index.html')

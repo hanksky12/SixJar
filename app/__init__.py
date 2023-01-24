@@ -27,6 +27,8 @@ migrate = Migrate()
 jwt = JWTManager()
 login_manager = LoginManager()
 login_manager.login_view = 'user.login3' #endpoint
+login_manager.login_message = "請先登入" #未登入的訊息
+login_manager.login_message_category = "info" #未登入的訊息等級
 
 
 
@@ -68,7 +70,5 @@ def create_app():
     # with app.app_context():
     #     db.create_all()
 
-    # docs.init_app(app)
-
-
+    docs.init_app(app)
     return app

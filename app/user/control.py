@@ -1,8 +1,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask_login import  logout_user
 
 from .model import User
 from .. import db
+from ..utils import JwtTool
 
 class UserControl:
     def __init__(self):
@@ -20,7 +21,9 @@ class UserControl:
         self.__user = user
         return True
 
-    # def logout(self):
+    def logout(self, resp):
+        JwtTool.unset_cookie(resp)
+        logout_user()
 
     def register(self, email, name, password):
         user = User(
@@ -30,7 +33,15 @@ class UserControl:
         )
         db.session.add(user)
         db.session.commit()
+        self.__id = user.id
 
+    def delete_info(self, id):
+        row_cowunt = db.session.query(User).filter_by(id=id).delete()
+        if row_cowunt != 1:
+            return False
+        else:
+            db.session.commit()
+            return True
 
 
     def change_info(self, id ,name, password):
