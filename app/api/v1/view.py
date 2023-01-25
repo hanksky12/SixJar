@@ -51,34 +51,33 @@ class IncomeAndExpenseApi(MethodResource):
     @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, income_and_expense_id, **kwargs):
-        control = IncomeAndExpenseControl(
-            income_and_expense_id=income_and_expense_id,
-            **kwargs
-        )
-        is_success = control.read()
-        if is_success:
+        try:
+            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
+            control.read()
             return ResponseTool.success(message="查詢成功", data=control.response_data)
-        else:
-            return ResponseTool.params_error(message="查詢失敗，參數錯誤")
-
-    @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
-    def delete(self, income_and_expense_id, **kwargs):
-        control = IncomeAndExpenseControl(
-            income_and_expense_id=income_and_expense_id,
-            **kwargs
-        )
-        control.delete()
-        # 待填
+        except Exception as e:
+            return ResponseTool.params_error(message=f"查詢失敗,{e}")
 
     @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def put(self, income_and_expense_id, **kwargs):
-        control = IncomeAndExpenseControl(
-            income_and_expense_id=income_and_expense_id,
-            **kwargs)
-        control.update()
-        # 待填
+        try:
+            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id,**kwargs)
+            control.update()
+            return ResponseTool.success(message="更新成功", data=control.response_data)
+        except Exception as e:
+            return ResponseTool.params_error(message=f"更新失敗,{e}")
+
+
+    @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
+    @DecoratorTool.verify_user_id_and_jwt_cookie
+    def delete(self, income_and_expense_id, **kwargs):
+        try:
+            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id,**kwargs)
+            control.delete()
+            return ResponseTool.success(message="刪除成功", data=control.response_data)
+        except Exception as e:
+            return ResponseTool.params_error(message=f"刪除失敗,{e}")
 
 
 class TokenRefreshApi(MethodResource):
@@ -95,16 +94,16 @@ class TokenRefreshApi(MethodResource):
 class UserLoginApi(MethodResource):
     @DecoratorTool.integrate(["Token"], UserLoginSchema, UserIdSchema)
     def post(self, **kwargs):
-        control = UserControl()
-        is_login = control.login(kwargs["email"],
-                                 kwargs["password"])
-        if is_login:
+        try:
+            control = UserControl()
+            control.login(kwargs["email"],
+                                     kwargs["password"])
             resp = make_response(ResponseTool.success(message="登入成功", data={"user_id": control.user_id}))
             JwtTool.setting_cookie(resp, control.user.id)
             login_user(control.user, kwargs["remember_me"])
             return resp
-        else:
-            return ResponseTool.params_error(message="登入失敗, 使用者不存在或密碼錯誤", data=kwargs)
+        except Exception as e:
+            return ResponseTool.params_error(message=f"登入失敗,{e}", data=kwargs)
 
 
 class UserLogoutApi(MethodResource):

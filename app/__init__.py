@@ -2,13 +2,13 @@ import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_apispec.extension import FlaskApiSpec
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy as BaseSQLAlchemy
 from flask_jwt_extended import JWTManager
 from sqlalchemy import MetaData
 from dotenv import load_dotenv
 from flask_migrate import Migrate
 from flask_login import LoginManager
-
+from contextlib import contextmanager
 from .config import config
 
 metadata = MetaData(
@@ -20,6 +20,18 @@ metadata = MetaData(
     "pk": "pk_%(table_name)s"
     }
 )
+
+class SQLAlchemy(BaseSQLAlchemy):
+    @contextmanager
+    def auto_commit(self):
+        try:
+            yield
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+
+
 db = SQLAlchemy(metadata=metadata)
 bootstrap = Bootstrap()
 docs = FlaskApiSpec()

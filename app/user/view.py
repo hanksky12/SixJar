@@ -19,17 +19,16 @@ def login3():
     if form.validate_on_submit() is False:
         flash_form_error(form)
         return render_template(basic_template, form=form)
-    control = UserControl()
-    is_login = control.login(form.email.data,
-                             form.password.data)
-    if is_login:
+    try:
+        control = UserControl()
+        control.login(form.email.data, form.password.data)
         flash("登入成功", category='info')
         resp = redirect(url_for('six_jar.savings'))
         JwtTool.setting_cookie(resp, control.user.id)
         login_user(control.user, form.remember_me.data)
         return resp
-    else:
-        flash("登入失敗,沒有使用者或密碼錯誤", category='danger')
+    except Exception as e:
+        flash(f"登入失敗,{e}", category='danger')
         return redirect(url_for('user.login3'))
 
 

@@ -74,6 +74,7 @@ class DecoratorTool:
             if current_user.id != kwargs["user_id"]:
                 return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
             return f(*args, **kwargs)
+
         return wrapper
 
 
@@ -93,3 +94,24 @@ class SchemaTool:
             "message": fields.Str(),
             "data": fields.List(fields.Nested(otherschema))
         })
+
+
+
+
+class CustomizeError(Exception):
+    def __init__(self, value, value2="", value3="", value4=""):
+        self.value = value
+        self.value2 = value2
+        self.value3 = value3
+        self.value4 = value4
+
+    @classmethod
+    def no_record_find(cls):
+        return cls("找不到紀錄!!")
+
+    @classmethod
+    def no_record_find_or_number_unusual(cls):
+        return cls("找不到紀錄或數目異常!!")
+
+    def __str__(self):
+        return repr(self.value + self.value2 + self.value3 + self.value4)

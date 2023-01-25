@@ -3,7 +3,8 @@ from flask_login import  logout_user
 
 from .model import User
 from .. import db
-from ..utils import JwtTool
+from ..utils import JwtTool, CustomizeError
+
 
 class UserControl:
     def __init__(self):
@@ -13,13 +14,11 @@ class UserControl:
 
     def login(self, email, password):
         user = User.query.filter_by(email=email).first()
-        if user is None:
-            return False
-        if user.check_password(password) is False:
-            return False
+        if user is None or user.check_password(password) is False:
+            raise CustomizeError("帳號不存在或密碼錯誤")
         self.__id = user.id
         self.__user = user
-        return True
+
 
     def logout(self, resp):
         JwtTool.unset_cookie(resp)

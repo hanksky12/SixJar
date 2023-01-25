@@ -22,7 +22,7 @@ class IncomeAndExpense(db.Model):
     income_and_expense = db.Column(db.String(10), nullable=False)
     money = db.Column(db.Integer, nullable=False)
     date = db.Column(db.Date, nullable=False)
-    remark = db.Column(db.String(100))
+    remark = db.Column(db.String(100), default="")
     jar_id = db.Column(db.Integer, db.ForeignKey('jar.id'))#外來鍵
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))#外來鍵
 
