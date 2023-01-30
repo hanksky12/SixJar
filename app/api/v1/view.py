@@ -6,7 +6,7 @@ from flask import make_response
 from flask_login import login_user
 
 from . import api_bp, api
-from ...utils import ResponseTool, DecoratorTool, JwtTool
+from ...utils import ResponseTool, DecoratorTool, JwtTool, CustomizeError
 from ...user.control import UserControl
 from ...user.model import User
 from ...six_jar.control import IncomeAndExpenseControl
@@ -55,30 +55,35 @@ class IncomeAndExpenseApi(MethodResource):
             control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
             control.read()
             return ResponseTool.success(message="查詢成功", data=control.response_data)
-        except Exception as e:
+        except CustomizeError as e:
             return ResponseTool.params_error(message=f"查詢失敗,{e}")
+        except Exception as e:
+            return ResponseTool.params_error(message=f"查詢失敗,未知錯誤")
 
     @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def put(self, income_and_expense_id, **kwargs):
         try:
-            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id,**kwargs)
+            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
             control.update()
             return ResponseTool.success(message="更新成功", data=control.response_data)
-        except Exception as e:
+        except CustomizeError as e:
             return ResponseTool.params_error(message=f"更新失敗,{e}")
-
+        except Exception as e:
+            return ResponseTool.params_error(message=f"更新失敗,未知錯誤")
 
     @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def delete(self, income_and_expense_id, **kwargs):
+        print("進到delete")
         try:
-            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id,**kwargs)
+            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
             control.delete()
             return ResponseTool.success(message="刪除成功", data=control.response_data)
-        except Exception as e:
+        except CustomizeError as e:
             return ResponseTool.params_error(message=f"刪除失敗,{e}")
-
+        except Exception as e:
+            return ResponseTool.params_error(message=f"刪除失敗,後台未知錯誤")
 
 class TokenRefreshApi(MethodResource):
     @DecoratorTool.integrate_repeat(["Token"], EmptySchema)
@@ -96,14 +101,17 @@ class UserLoginApi(MethodResource):
     def post(self, **kwargs):
         try:
             control = UserControl()
-            control.login(kwargs["email"],
-                                     kwargs["password"])
-            resp = make_response(ResponseTool.success(message="登入成功", data={"user_id": control.user_id}))
-            JwtTool.setting_cookie(resp, control.user.id)
-            login_user(control.user, kwargs["remember_me"])
+            resp = control.login(kwargs["email"],
+                          kwargs["password"],
+                          kwargs["remember_me"],
+                          lambda user_id:make_response(ResponseTool.success(message="登入成功", data={"user_id": user_id}))
+                          )
             return resp
-        except Exception as e:
+        except CustomizeError as e:
             return ResponseTool.params_error(message=f"登入失敗,{e}", data=kwargs)
+
+        except Exception as e:
+            return ResponseTool.params_error(message=f"登入失敗,未知錯誤")
 
 
 class UserLogoutApi(MethodResource):
@@ -166,8 +174,8 @@ api_dict = {
     "/users/login": UserLoginApi,
     "/users/logout": UserLogoutApi,
     "/token/refresh": TokenRefreshApi,
-    "/income_and_expense": IncomeAndExpensePostApi,
-    "/income_and_expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
+    "/income-and-expense": IncomeAndExpensePostApi,
+    "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
 }
 
 for route, api_resource in api_dict.items():

@@ -19,17 +19,19 @@ def login3():
     if form.validate_on_submit() is False:
         flash_form_error(form)
         return render_template(basic_template, form=form)
-    try:
-        control = UserControl()
-        control.login(form.email.data, form.password.data)
-        flash("登入成功", category='info')
-        resp = redirect(url_for('six_jar.savings'))
-        JwtTool.setting_cookie(resp, control.user.id)
-        login_user(control.user, form.remember_me.data)
-        return resp
-    except Exception as e:
-        flash(f"登入失敗,{e}", category='danger')
-        return redirect(url_for('user.login3'))
+
+    control = UserControl()
+    resp = control.login(
+        form.email.data,
+        form.password.data,
+        form.remember_me.data,
+        lambda user_id: redirect(url_for('six_jar.savings'))
+    )
+    flash("登入成功", category='info')
+    return resp
+    # except Exception as e:
+    #     flash(f"登入失敗,{e}", category='danger')
+    #     return redirect(url_for('user.login3'))
 
 
 @user_bp.route("/register", methods=["POST", "GET"])
@@ -51,7 +53,7 @@ def register():
     return redirect(url_for('user.login3'))
 
 
-@user_bp.route("/user_info", methods=["POST", "GET"])
+@user_bp.route("/user-info", methods=["POST", "GET"])
 @login_required
 def user_info():
     form = UserInfoForm()
@@ -77,6 +79,7 @@ def logout():
     resp = redirect(url_for('main.index'))
     control = UserControl()
     control.logout(resp)
+    flash("登出成功", category='info')
     return resp
 
 

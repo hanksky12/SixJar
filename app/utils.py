@@ -71,6 +71,7 @@ class DecoratorTool:
     def verify_user_id_and_jwt_cookie(f):
         @jwt_required()
         def wrapper(*args, **kwargs):
+            print("取jwt")
             if current_user.id != kwargs["user_id"]:
                 return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
             return f(*args, **kwargs)

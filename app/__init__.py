@@ -72,7 +72,7 @@ def create_app():
     app.register_blueprint(user_bp, url_prefix='/user')
 
     from .six_jar import six_jar_bp
-    app.register_blueprint(six_jar_bp, url_prefix='/six_jar')
+    app.register_blueprint(six_jar_bp, url_prefix='/six-jar')
 
     from .api.v1 import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
