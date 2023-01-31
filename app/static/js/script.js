@@ -4,7 +4,7 @@ class ModalOperate
 {
   #modal
   constructor() {
-    this.#modal = document.getElementById('exampleModal')
+    this.#modal = document.getElementById('jarModal')
   }
 
   connect(event){
@@ -63,7 +63,6 @@ class ModalOperate
 class CurrentRow
 {
   #array
-
   getInfo(button, method) {
     if (method =="新增")
       this.#array =["0","","",Util.getTodayDate(),0,""]
@@ -178,19 +177,26 @@ class Util
 
 class Ajax
 {
+  static currentRowObject 
+  static modalObject 
+  static jarFormObject 
   #currentRowObject
   #modalObject
   #jarFormObject
   #request
-  constructor(currentRowObject,modalObject,jarFormObject) {
-    this.#currentRowObject= currentRowObject
-    this.#modalObject = modalObject
-    this.#jarFormObject = jarFormObject
-  }
+  responseData
+  isSuccess
 
-  prepareData(){
-    const id = this.#currentRowObject.id
+  static preparejarData(currentRowObject,modalObject,jarFormObject){
+    console.log('preparejarData')
+    Ajax.currentRowObject = currentRowObject
+    Ajax.modalObject = modalObject
+    Ajax.jarFormObject = jarFormObject
+
+    const id = currentRowObject.id
     const userId = parseInt(Util.getCookie("user_id"))
+    const money =  parseInt(jarFormObject.money)
+    const income_and_expense = (jarFormObject.income_and_expense =="收入") ? 'income' : 'expense'
     const httpHeaders = {
       'Content-Type' : 'application/json', 
       'Accept-Charset' : 'utf-8', 
@@ -199,83 +205,175 @@ class Ajax
     let method
     let body
     let URL = "http://127.0.0.1:5001/api/v1/income-and-expense"
-    if (this.#modalObject.method == '新增')
+    if (Ajax.modalObject.method == '新增')
     {
       method ='POST'
       body={
         "user_id":userId,
-        "money":jarFormObject.money,
+        "money":money,
         "date":jarFormObject.date,
         "jar_name":jarFormObject.jar_name,
         "remark":jarFormObject.remark,
-        "income_and_expense":()=> (jarFormObject.income_and_expense =="收入") ? 'income' : 'expense'
+        "income_and_expense": income_and_expense
 
         }
+        console.log(body)
     }
-    else if (this.#modalObject.method == '修改')
+    else if (Ajax.modalObject.method == '修改')
     {
       method ='PUT'
       URL+="/"+id
       body={
         "user_id":userId,
-        "money":jarFormObject.money,
+        "money":money,
         "date":jarFormObject.date,
         "jar_name":jarFormObject.jar_name,
         "remark":jarFormObject.remark,
-        "income_and_expense":()=> (jarFormObject.income_and_expense =="收入") ? 'income' : 'expense'
+        "income_and_expense": income_and_expense
         }
     }
-    else if (this.#modalObject.method == '刪除')
+    else if (Ajax.modalObject.method == '刪除')
     {
       method ='DELETE'
       URL+="/"+id
       body={"user_id":userId}
     }
-    this.#request = new Request(URL, {method: method, headers: new Headers(httpHeaders),body:JSON.stringify(body)})
-  }
-  send(){
-    fetch(this.#request)
-    .then(this.#processStatus)
-    .then(this.#successfullyHandling)
-    .catch((res) =>res.then(this.#failHandling)
-    );
+    return  new Request(URL, {method: method, headers: new Headers(httpHeaders),body:JSON.stringify(body)})
   }
 
-  #processStatus(response) {  
-    if (response.status >= 200 && response.status < 300) {  
-       return Promise.resolve(response.json())  
+
+   static prepareTokenData(){
+    console.log('prepareTokenData')
+    const httpHeaders = {
+      'Content-Type' : 'application/json', 
+      'Accept-Charset' : 'utf-8', 
+      'Accept' : 'application/json',
+      'X-CSRF-TOKEN':Util.getCookie("csrf_refresh_token")}
+
+    let URL = "http://127.0.0.1:5001/api/v1/token/refresh"
+    let method ='POST'
+    return new Request(URL, {method: method, headers: new Headers(httpHeaders)})
+  }
+
+
+  static send(request){
+    console.log("send")
+    console.log(request)
+    fetch(request)
+    .then(res => res.json())
+    .then(Ajax.processStatus)
+    .then(Ajax.successHandling)
+    .catch(Ajax.failHandling)
+    .then(Ajax.send)
+    .then(function() {
+      return Ajax.preparejarData(Ajax.currentRowObject, Ajax.modalObject, Ajax.jarFormObject)
+    })
+    .then(Ajax.send)
+
+
+
+    // return new Promise((resolve, reject) => {
+    //   resolve(true) 
+    // })
+  }
+
+  static processStatus(response) {  
+    console.log("processStatus")
+    console.log(response)
+    if (response.code >= 200 && response.code < 300) {  
+      console.log("http200 OK")
+      return Promise.resolve(response)  
      } 
-     else {  
-      return Promise.reject(response.json())  
+    else {  
+      console.log("非 http 200")
+      console.log("解析msg ")
+      let message = response.msg
+      if ( message == ""){
+        console.log("解析errors.json ")
+        message= response.errors.json
+      }
+      else{
+        console.log("不用")
+      }
+
+      return Promise.reject(new Error(message)) 
+      
      }  
    }
 
-   #successfullyHandling(res){
-    console.log(res)
-    if (res.code == 200)
-      {
-        Util.addAlert(JSON.stringify(res.message),'primary')
-        this.responseData = JSON.parse(res.data)
-        this.isSuccess = true
-      }
-    else
-      Util.addAlert(JSON.stringify(res.message),'danger')
-      this.isSuccess = false
+   static failHandling(error){
+    console.log("failHandling")
+    console.log(error)
+    let message = error.message
+    console.log(message)
+    if (message=="Token has expired"){
+      console.log("msg  Token has expired") //待測
+
+      return new Promise((resolve, reject) => {
+        resolve(Ajax.prepareTokenData()) 
+      });
+
+
+      // let promise = Ajax.promise()
+      // promise
+      // .then(Ajax.send)
+      // // .then(Ajax.preparejarData(Ajax.currentRowObject, Ajax.modalObject, Ajax.jarFormObject))
+      // .then(function() {
+      //   return Ajax.preparejarData(Ajax.currentRowObject, Ajax.modalObject, Ajax.jarFormObject)
+      // })
+
+      // .then(Ajax.send)
+
+
+      request = Ajax.prepareTokenData()
+      Ajax.send(request)
+      request =Ajax.preparejarData(Ajax.currentRowObject, Ajax.modalObject, Ajax.jarFormObject)
+      Ajax.send(request)
+    }
+    else{
+      console.log("msg not Token has expired")
+      Util.addAlert(JSON.stringify(message),'danger') //OK
+    }
+    }
+
+
+  static promise() {
+    return new Promise((resolve, reject) => {
+      resolve(Ajax.prepareTokenData()) 
+    });
   }
 
-  #failHandling(res){
-      console.log(res.errors.json)
-      Util.addAlert(JSON.stringify(res.errors.json),'danger')
-      this.isSuccess = false
+
+
+
+  static successHandling(response){
+    console.log("successHandling")
+    if (response.message == "token 更新成功"){
+      console.log("更新成功")
+    }
+    else{
+      Util.addAlert(JSON.stringify(response.message),'primary')
+      let responseData = response.data
+      console.log(responseData)
+      if (Ajax.modalObject.method == "新增"){
+
+      }
+      else if (Ajax.modalObject.method == "修改"){
+
+      }
+      else if (Ajax.modalObject.method == "刪除"){
+
+      }}
     }
 
 }
+
 
 let jarFormObject = new JarForm()
 let modalObject = new ModalOperate()
 let currentRowObject = new CurrentRow()
 
-$("#exampleModal").on('show.bs.modal', function (event) {
+$("#jarModal").on('show.bs.modal', function (event) {
 
   console.log("初始化modal")
   //初始化
@@ -294,17 +392,13 @@ $("#confirm-change-btn").on("click",function(event){
   console.log("檢查form")
   jarFormObject.autoBootstrapValid(event)
   jarFormObject.getValue()
-  ajaxObject = new Ajax(currentRowObject,modalObject,jarFormObject)
-  ajaxObject.prepareData()
-  ajaxObject.send()
-  if (ajaxObject.isSuccess){
-    //關閉
-    //變更畫面 使用 ajaxObject.responseData
-  }
+  // ajaxObject = new Ajax()
+  request = Ajax.preparejarData(currentRowObject,modalObject,jarFormObject)
+  Ajax.send(request)
 
 })
 
 elements = document.getElementsByName('close')
 for (let element of elements){
-  element.addEventListener('click',()=>Util.removeAlert(message=''))
+  element.addEventListener('click',()=>Util.removeAlert())
 }

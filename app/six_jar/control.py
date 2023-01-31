@@ -14,6 +14,13 @@ class IncomeAndExpenseControl:
         self.__distribution_money_list = None
         self.__income_and_expense_id = None
 
+
+    def query(self):
+        income_and_expense = IncomeAndExpense.query.filter_by(user_id=self.__kwargs["user_id"]).all()
+
+        return
+
+
     def read(self):
         income_and_expense = IncomeAndExpense.query.filter_by(id=self.__kwargs["income_and_expense_id"]).first()
         if income_and_expense:
@@ -31,7 +38,7 @@ class IncomeAndExpenseControl:
     def insert(self):
         with db.auto_commit():
             savings, income_and_expense = self.__add_record()
-            db.session.add([savings, income_and_expense])
+            db.session.add_all([savings, income_and_expense])
         self.__saving = savings.savings
         self.__response_data["income_and_expense_id"] = income_and_expense.id
 

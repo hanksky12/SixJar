@@ -1,7 +1,7 @@
 from flask_apispec import MethodResource
 from marshmallow import Schema, fields
 from flask_apispec import use_kwargs, marshal_with, doc
-from flask_jwt_extended import jwt_required, current_user
+from flask_jwt_extended import jwt_required, current_user, get_jwt_identity, create_access_token, set_access_cookies
 from flask import make_response
 from flask_login import login_user
 
@@ -90,8 +90,8 @@ class TokenRefreshApi(MethodResource):
     @jwt_required(refresh=True)
     def post(self):
         user_id = get_jwt_identity()
-        access_token = create_access_token(identity=user_id)
         resp = make_response(ResponseTool.success(message="token 更新成功"), 302)
+        access_token = create_access_token(identity=user_id)
         set_access_cookies(resp, access_token)
         return resp
 

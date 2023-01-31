@@ -88,7 +88,8 @@ def savings():
 @six_jar_bp.route("/income-and-expense-table", methods=["GET"])
 @login_required
 def income_and_expense_table():
-    # control = IncomeAndExpenseControl(user_id=current_user.id)
+    control = IncomeAndExpenseControl(user_id=current_user.id)
+
     # control.init_savings()
     # savings_list = control.get_saving_list()
     return render_template("six_jar/income_and_expense_table.html")
