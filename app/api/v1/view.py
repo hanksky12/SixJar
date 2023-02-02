@@ -6,7 +6,7 @@ from flask import make_response
 from flask_login import login_user
 
 from . import api_bp, api
-from ...utils import ResponseTool, DecoratorTool, JwtTool, CustomizeError
+from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
 from ...user.control import UserControl
 from ...user.model import User
 from ...six_jar.control import IncomeAndExpenseControl
@@ -20,7 +20,8 @@ from .schema import \
     UserIdSchema, \
     UserInfoSchema, \
     ResponseIncomeAndExpenseSchema, \
-    DeleteResponseIncomeAndExpenseSchema
+    DeleteResponseIncomeAndExpenseSchema,\
+    QueryIncomeAndExpenseSchema
 
 
 @jwt.user_lookup_loader
@@ -29,13 +30,21 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return User.query.filter_by(id=identity).one_or_none()
 
 
+class IncomeAndExpenseSearchApi(MethodResource):
+    # @doc(tags=["IncomeAndExpense💰"])
+    @use_kwargs(QueryIncomeAndExpenseSchema(), location='querystring')
+    @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
+    # @DecoratorTool.verify_user_id_and_jwt_cookie
+    def get(self, **kwargs):
+        print("get")
+        print(kwargs)
+        control = IncomeAndExpenseControl(user_id=kwargs["user_id"])
+        income_and_expense_list = control.query()
+        print(income_and_expense_list)
+        return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total":100}
+
 class IncomeAndExpensePostApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
-
-    @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
-    def get(self):
-        pass
 
     @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
@@ -175,6 +184,7 @@ api_dict = {
     "/users/logout": UserLogoutApi,
     "/token/refresh": TokenRefreshApi,
     "/income-and-expense": IncomeAndExpensePostApi,
+    "/income-and-expense/search": IncomeAndExpenseSearchApi,
     "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
 }
 

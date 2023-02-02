@@ -14,11 +14,29 @@ class IncomeAndExpenseControl:
         self.__distribution_money_list = None
         self.__income_and_expense_id = None
 
-
     def query(self):
-        income_and_expense = IncomeAndExpense.query.filter_by(user_id=self.__kwargs["user_id"]).all()
+        income_and_expense_object_list = IncomeAndExpense.query \
+            .join(Jar, IncomeAndExpense.jar_id == Jar.id) \
+            .add_columns(IncomeAndExpense.id,
+                        IncomeAndExpense.income_and_expense,
+                         IncomeAndExpense.money,
+                         IncomeAndExpense.date,
+                         IncomeAndExpense.remark,
+                         IncomeAndExpense.user_id,
+                         Jar.name) \
+            .filter(IncomeAndExpense.user_id == self.__kwargs["user_id"]) \
+            .filter(IncomeAndExpense.jar_id == 1)\
+            .all()
 
-        return
+        # new_list= []
+        # for row in income_and_expense_object_list:
+        #     dict =
+        #     new_list.append(dict)
+
+        return [row._mapping for row in income_and_expense_object_list]
+
+
+
 
 
     def read(self):

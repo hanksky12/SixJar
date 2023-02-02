@@ -93,6 +93,7 @@ class SchemaTool:
         return Schema.from_dict({
             "code": fields.Int(),
             "message": fields.Str(),
+            "total":fields.Int(),
             "data": fields.List(fields.Nested(otherschema))
         })
 

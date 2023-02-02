@@ -47,7 +47,7 @@ class UserPutSchema(UserNameSchema, PasswordSchema):
     password2 = fields.Str(required=True)
 
     @validates_schema
-    def validate_password2(self, data, **kwargs): #一定要kwargs
+    def validate_password2(self, data, **kwargs):  # 一定要kwargs
         if data["password"] != data["password2"]:
             raise ValidationError("兩次密碼不相等")
 
@@ -75,6 +75,21 @@ class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, IncomeAndExpenseS
     pass
 
 
+class QueryIncomeAndExpenseSchema(Schema):
+    user_id = fields.Int(required=True)
+    limit = fields.Int(required=True, validate=validate.Range(min=1))
+    offset = fields.Int(required=True, validate=validate.Range(min=0))
+    page = fields.Int(required=True, validate=validate.Range(min=1))
+    sortOrder = fields.Str(required=True, validate=validate.OneOf(["asc", "desc"]))
+    sort = fields.Str(validate=validate.OneOf(["date", "money", "jar_name"]))
+    income_and_expense = fields.Str(validate=validate.OneOf(["income", "expense"]))
+    jar_name = fields.Str(validate=validate.OneOf(Jars.names()))
+    minimum_money = fields.Int(validate=validate.Range(min=1))
+    maximum_money = fields.Int(validate=validate.Range(min=1))
+    earliest_date = fields.DateTime(format='%Y-%m-%d')
+    latest_date = fields.DateTime(format='%Y-%m-%d')
+
+
+
 class DeleteResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, UserIdSchema):
     pass
-
