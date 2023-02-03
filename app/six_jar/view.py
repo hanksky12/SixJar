@@ -29,10 +29,9 @@ def expense():
     )
     control.insert()
     flash("新增支出成功", category='info')
-    if control.saving<0:
+    if control.saving < 0:
         flash(f"{form.jar_name.data}已經超支,剩下餘額：{control.saving}", category='warning')
     return redirect(url_for('six_jar.expense'))
-
 
 
 @six_jar_bp.route("/income", methods=["POST", "GET"])
@@ -40,10 +39,10 @@ def expense():
 def income():
     manually_form = ManuallyDistributeIncomeForm()
     automatic_form = AutomaticDistributionIncomeForm()
-    basic_template ="six_jar/income.html"
+    basic_template = "six_jar/income.html"
     if request.method == "GET":
         return render_template(basic_template, form=manually_form, form2=automatic_form)
-    if manually_form.manu_submit.data and manually_form.validate_on_submit() :
+    if manually_form.manu_submit.data and manually_form.validate_on_submit():
         control = IncomeAndExpenseControl(
             user_id=current_user.id,
             income_and_expense="income",
@@ -55,7 +54,7 @@ def income():
         control.insert()
         flash("新增收入成功", category='info')
         return redirect(url_for('six_jar.income'))
-    elif automatic_form.auto_submit.data  and automatic_form.validate_on_submit() :
+    elif automatic_form.auto_submit.data and automatic_form.validate_on_submit():
         control = IncomeAndExpenseControl(
             user_id=current_user.id,
             all_money=manually_form.money.data,
@@ -73,7 +72,6 @@ def income():
         return render_template(basic_template, form=manually_form, form2=automatic_form)
 
 
-
 @six_jar_bp.route("/savings", methods=["GET"])
 @login_required
 def savings():
@@ -88,8 +86,4 @@ def savings():
 @six_jar_bp.route("/income-and-expense-table", methods=["GET"])
 @login_required
 def income_and_expense_table():
-    # control = IncomeAndExpenseControl(user_id=current_user.id)
-    # income_and_expense_list = control.query()
-    # print(income_and_expense_list)
-    return render_template("six_jar/income_and_expense_table.html",
-                           jar_name = Jars.names())
+    return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names())

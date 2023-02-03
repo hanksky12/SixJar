@@ -21,7 +21,8 @@ from .schema import \
     UserInfoSchema, \
     ResponseIncomeAndExpenseSchema, \
     DeleteResponseIncomeAndExpenseSchema,\
-    QueryIncomeAndExpenseSchema
+    QueryIncomeAndExpenseSchema,\
+    RequestIncomeAndExpenseSchema
 
 
 @jwt.user_lookup_loader
@@ -36,17 +37,16 @@ class IncomeAndExpenseSearchApi(MethodResource):
     @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
     # @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, **kwargs):
-        print("get")
         print(kwargs)
-        control = IncomeAndExpenseControl(user_id=kwargs["user_id"])
-        income_and_expense_list = control.query()
+        control = IncomeAndExpenseControl(**kwargs)
+        income_and_expense_list, total = control.query()
         print(income_and_expense_list)
-        return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total":100}
+        return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total":total}
 
 class IncomeAndExpensePostApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
 
-    @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
+    @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def post(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
@@ -61,7 +61,7 @@ class IncomeAndExpenseApi(MethodResource):
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, income_and_expense_id, **kwargs):
         try:
-            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
+            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
             control.read()
             return ResponseTool.success(message="查詢成功", data=control.response_data)
         except CustomizeError as e:
@@ -69,11 +69,11 @@ class IncomeAndExpenseApi(MethodResource):
         except Exception as e:
             return ResponseTool.params_error(message=f"查詢失敗,未知錯誤")
 
-    @DecoratorTool.integrate(tags_list, IncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
+    @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def put(self, income_and_expense_id, **kwargs):
         try:
-            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
+            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
             control.update()
             return ResponseTool.success(message="更新成功", data=control.response_data)
         except CustomizeError as e:
@@ -86,7 +86,7 @@ class IncomeAndExpenseApi(MethodResource):
     def delete(self, income_and_expense_id, **kwargs):
         print("進到delete")
         try:
-            control = IncomeAndExpenseControl(income_and_expense_id=income_and_expense_id, **kwargs)
+            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
             control.delete()
             return ResponseTool.success(message="刪除成功", data=control.response_data)
         except CustomizeError as e:

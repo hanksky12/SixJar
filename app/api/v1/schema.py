@@ -60,15 +60,19 @@ class UserRegisterSchema(EmailSchema, UserPutSchema):
 
 
 class IncomeAndExpenseIDSchema(Schema):
-    income_and_expense_id = fields.Int(required=True)
+    id = fields.Int(required=True)
 
 
-class IncomeAndExpenseSchema(UserIdSchema):
+class IncomeAndExpenseSchema():
     income_and_expense = fields.Str(required=True, validate=validate.OneOf(["income", "expense"]))
     money = fields.Int(required=True, validate=validate.Range(min=1))
     date = fields.DateTime(required=True, format='%Y-%m-%d')
     jar_name = fields.Str(required=True, validate=validate.OneOf(Jars.names()))
     remark = fields.Str(validate=validate.Length(max=50, error='請介於0~50字'))
+
+
+class RequestIncomeAndExpenseSchema(IncomeAndExpenseSchema,UserIdSchema):
+    pass
 
 
 class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, IncomeAndExpenseSchema):
@@ -78,7 +82,6 @@ class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, IncomeAndExpenseS
 class QueryIncomeAndExpenseSchema(Schema):
     user_id = fields.Int(required=True)
     limit = fields.Int(required=True, validate=validate.Range(min=1))
-    offset = fields.Int(required=True, validate=validate.Range(min=0))
     page = fields.Int(required=True, validate=validate.Range(min=1))
     sortOrder = fields.Str(required=True, validate=validate.OneOf(["asc", "desc"]))
     sort = fields.Str(validate=validate.OneOf(["date", "money", "jar_name"]))

@@ -13,3 +13,6 @@
   border-left: 10px solid #fff;
 }
 
+.hide_column {
+    display : none;
+}
