@@ -16,16 +16,10 @@ class IncomeAndExpenseControl:
         self.__income_and_expense_id = None
 
     def query(self):
-
-        # minimum_money = fields.Int(validate=validate.Range(min=1))
-        # maximum_money = fields.Int(validate=validate.Range(min=1))
-        # earliest_date = fields.DateTime(format='%Y-%m-%d')
-        # latest_date = fields.DateTime(format='%Y-%m-%d')
         order_by = self.__return_order_by()
         filter = self.__return_filter()
-        income_and_expense_object_list = self.__query(filter, order_by)
-        print(income_and_expense_object_list)
-        page_objs = income_and_expense_object_list.paginate(page=self.__kwargs["page"], per_page=self.__kwargs["limit"])
+        income_and_expense_object = self.__query(filter, order_by)
+        page_objs = income_and_expense_object.paginate(page=self.__kwargs["page"], per_page=self.__kwargs["limit"])
         return [row._mapping for row in page_objs.items], page_objs.total
 
     def __query(self, filter, order_by):
@@ -45,6 +39,38 @@ class IncomeAndExpenseControl:
         filter = f"income_and_expense.user_id={self.__kwargs['user_id']} "
         filter = self.__add_income_and_expense_to_filter(filter)
         filter = self.__add_jar_name_to_filter(filter)
+        filter = self.__add_money_to_filter(filter)
+        filter = self.__add_date_to_filter(filter)
+        return filter
+
+    def __add_money_to_filter(self, filter):
+        filter = self.__add_maximum_money_to_filter(filter)
+        filter = self.__add_minimum_money_to_filter(filter)
+        return filter
+
+    def __add_maximum_money_to_filter(self, filter):
+        if self.__kwargs.get('maximum_money'):
+            filter += f" and income_and_expense.money <= '{self.__kwargs['maximum_money']}' "
+        return filter
+
+    def __add_minimum_money_to_filter(self, filter):
+        if self.__kwargs.get('minimum_money'):
+            filter += f" and income_and_expense.money >= '{self.__kwargs['minimum_money']}' "
+        return filter
+
+    def __add_date_to_filter(self, filter):
+        filter = self.__add_earliest_date_to_filter(filter)
+        filter = self.__add_latest_date_to_filter(filter)
+        return filter
+
+    def __add_latest_date_to_filter(self, filter):
+        if self.__kwargs.get('latest_date'):
+            filter += f" and income_and_expense.date <= '{self.__kwargs['latest_date']}' "
+        return filter
+
+    def __add_earliest_date_to_filter(self, filter):
+        if self.__kwargs.get('earliest_date'):
+            filter += f" and income_and_expense.date >= '{self.__kwargs['earliest_date']}' "
         return filter
 
     def __add_jar_name_to_filter(self, filter):

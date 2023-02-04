@@ -20,8 +20,8 @@ from .schema import \
     UserIdSchema, \
     UserInfoSchema, \
     ResponseIncomeAndExpenseSchema, \
-    DeleteResponseIncomeAndExpenseSchema,\
-    QueryIncomeAndExpenseSchema,\
+    DeleteResponseIncomeAndExpenseSchema, \
+    QueryIncomeAndExpenseSchema, \
     RequestIncomeAndExpenseSchema
 
 
@@ -32,16 +32,19 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 
 class IncomeAndExpenseSearchApi(MethodResource):
-    # @doc(tags=["IncomeAndExpense💰"])
+    @doc(tags=["IncomeAndExpense💰"])
     @use_kwargs(QueryIncomeAndExpenseSchema(), location='querystring')
     @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
-    # @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, **kwargs):
-        print(kwargs)
-        control = IncomeAndExpenseControl(**kwargs)
-        income_and_expense_list, total = control.query()
-        print(income_and_expense_list)
-        return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total":total}
+        try:
+            control = IncomeAndExpenseControl(**kwargs)
+            income_and_expense_list, total = control.query()
+            return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
+        except CustomizeError as e:
+            return ResponseTool.params_error(message=f"查詢失敗,{e}")
+        except Exception as e:
+            return ResponseTool.params_error(message=f"查詢失敗,未知錯誤")
 
 class IncomeAndExpensePostApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
@@ -94,6 +97,7 @@ class IncomeAndExpenseApi(MethodResource):
         except Exception as e:
             return ResponseTool.params_error(message=f"刪除失敗,後台未知錯誤")
 
+
 class TokenRefreshApi(MethodResource):
     @DecoratorTool.integrate_repeat(["Token"], EmptySchema)
     @jwt_required(refresh=True)
@@ -111,10 +115,11 @@ class UserLoginApi(MethodResource):
         try:
             control = UserControl()
             resp = control.login(kwargs["email"],
-                          kwargs["password"],
-                          kwargs["remember_me"],
-                          lambda user_id:make_response(ResponseTool.success(message="登入成功", data={"user_id": user_id}))
-                          )
+                                 kwargs["password"],
+                                 kwargs["remember_me"],
+                                 lambda user_id: make_response(
+                                     ResponseTool.success(message="登入成功", data={"user_id": user_id}))
+                                 )
             return resp
         except CustomizeError as e:
             return ResponseTool.params_error(message=f"登入失敗,{e}", data=kwargs)

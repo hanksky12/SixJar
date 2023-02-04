@@ -16,3 +16,33 @@
 .hide_column {
     display : none;
 }
+
+.bg-type1 {
+    background-color: #FFFFBB !important;
+}
+
+.bg-type2 {
+    background-color: #CCCCFF !important;
+}
+
+.bg-type3 {
+    background-color: #FFB7DD !important;
+}
+
+.bg-type4 {
+    background-color: #00FF99 !important;
+}
+
+.bg-type5 {
+    background-color: #EE7700 !important;
+}
+
+.bg-type6 {
+    background-color: #FFFFFF !important;
+}
+
+.table .thead-blue th {
+color: #fff;
+background-color: #8B4513;
+border-color: #0d7adf;
+}

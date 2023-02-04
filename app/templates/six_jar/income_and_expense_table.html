@@ -1,10 +1,10 @@
 {% extends "common/mybase.html" %}
 
 {% block section1 %}
-
+  <div id="liveAlertPlaceholder"></div>
 {% include 'six_jar/jar_modal.html' %}
 
-      <h3 class="text-primary "><b><--支出收入表--></b></h3>
+      <h3 class="text-primary "><b><📔支出收入表></b></h3>
 <div style="border:1px blue dotted ;padding:15px 20px;">
 
 <div class="container">
@@ -34,7 +34,7 @@
   <div class="row">
     <div class="col">
       <div class="input-group mb-3">
-        <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px"><h4 class="text-primary">金額:</h4></label>
+        <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px"><h4 class="text-primary">金額區間:</h4></label>
 
         <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px">最小</label>
         <input type="number" class="form-control" id="minimum_money" min=1/>
@@ -46,7 +46,7 @@
   <div class="row">
     <div class="col">
       <div class="input-group mb-3">
-        <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px"><h4 class="text-primary">日期:</h4></label>
+        <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px"><h4 class="text-primary">日期區間:</h4></label>
 
         <label class="col-sm-2 control-label" style="text-align: center; margin-top:5px">最早</label>
         <input type="date" class="form-control" id="earliest_date" name="date" min="1900-01-01"  >
@@ -81,5 +81,5 @@
 
 
 {% block scripts %}
-<script src="{{url_for('static', filename='/js/script.js')}}"></script>
+<script type="module" src="{{url_for('static', filename='/js/script.js')}}"></script>
 {% endblock %}
