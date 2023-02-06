@@ -45,7 +45,7 @@ export class Util {
 export  class Constant{
     constructor(){
       this.userId = parseInt(Util.getCookie("user_id"))
-      this.url = "http://127.0.0.1:5001/api/v1"
+      this.url = "/api/v1"
       this.httpHeaders = {
         'Content-Type': 'application/json',
         'Accept-Charset': 'utf-8',
