@@ -1,0 +1,25 @@
+runtime: python39
+
+# 使用gunicorn  指定 app.py 裡面的app
+entrypoint: gunicorn -b :$PORT 'app:create_app()'
+
+
+handlers:
+  # This configures Google App Engine to serve the files in the app's static
+  #可选。应用根目录中包含静态文件的目录的路径。所匹配的 url 格式结尾字符后面的所有内容都会附加到 static_dir 中，以构成所请求文件的完整路径。
+- url: /static
+  static_dir: app/static
+
+  # This handler routes all requests not caught above to your main app. It is
+  # required when static routes are defined, but can be omitted (along with
+  # the entire handlers section) when there are no static files defined.
+- url: /.*
+  script: auto
+
+env_variables:
+          PYTHON_WEB_CONFIG: development
+          INSTANCE_UNIX_SOCKET: /cloudsql/sixjar:asia-east1:sixjar
+          INSTANCE_CONNECTION_NAME: sixjar:asia-east1:sixjar
+          DB_USER: root
+          DB_PASS: sixjar
+          DB_NAME: SixJar

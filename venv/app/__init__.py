@@ -11,6 +11,8 @@ from flask_login import LoginManager
 from contextlib import contextmanager
 from .config import config
 
+
+
 metadata = MetaData(
     naming_convention={
     "ix": 'ix_%(column_0_label)s',
@@ -54,11 +56,10 @@ class FlaskApp:
 
 
 def create_app():
-    load_dotenv()
     FlaskApp().create()
     app = FlaskApp().app
     jwt.init_app(app)
-    app.config.from_object(config[os.getenv("PYTHON_WEB_CONFIG")])
+    app.config.from_object(config[os.environ["PYTHON_WEB_CONFIG"]])
     bootstrap.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
@@ -79,8 +80,8 @@ def create_app():
 
 
     # 分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
-    # with app.app_context():
-    #     db.create_all()
+    with app.app_context():
+        db.create_all()
 
     docs.init_app(app)
     return app
