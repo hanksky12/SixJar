@@ -111,7 +111,7 @@ export  class JarForm {
     }
 
     isChange(currentRow, modalObject){
-        self.#getValue()
+        this.#getValue()
         if (this.money !=currentRow.money) return true
         if (this.remark !=currentRow.remark) return true
         if (this.date !=currentRow.date) return true
