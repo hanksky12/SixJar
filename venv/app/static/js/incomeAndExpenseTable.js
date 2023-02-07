@@ -104,7 +104,9 @@ export class IncomeAndExpenseTable{
         onLoadError: (status, jqXHR)=> {
             console.log(status)
             console.log(jqXHR["responseJson"])
-            return this.#refreshToken()}, //更新token
+            if (status==401) return this.#refreshToken()
+            else {return Util.addAlert("表單資料load失敗！", 'danger')}
+            }, //更新token
         responseHandler:(res)=>{return res},//不建議更改，會影響bootstrap 抓取total 
       })
     }
