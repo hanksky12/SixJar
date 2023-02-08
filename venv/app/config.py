@@ -2,18 +2,13 @@ import os
 import datetime
 import sqlalchemy
 
-from google.cloud.sql.connector import Connector, IPTypes
-import pymysql
+# from google.cloud.sql.connector import Connector, IPTypes
+# import pymysql
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-
-
-
-
-
 instance_connection_name = os.environ["INSTANCE_CONNECTION_NAME"]  # e.g. 'project:region:instance'
 db_user = os.environ.get("DB_USER", "")  # e.g. 'my-db-user'
 db_pass = os.environ["DB_PASS"]  # e.g. 'my-db-password'
@@ -22,38 +17,8 @@ ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
 unix_socket_path = os.environ["INSTANCE_UNIX_SOCKET"]
 
 
-
-# def getconn() -> pymysql.connections.Connection:
-#     connector = Connector(ip_type)
-#     conn: pymysql.connections.Connection = connector.connect(
-#         instance_connection_name,
-#         "pymysql",
-#         user=db_user,
-#         password=db_pass,
-#         db=db_name,
-#     )
-#     return conn
-
 class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # 減少SQLALCHEMY記憶體消耗
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'project.db')
-    SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
-            drivername="mysql+pymysql",
-            username=db_user,
-            password=db_pass,
-            database=db_name,
-            query={"unix_socket": unix_socket_path},
-        )
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        # "url":"mysql+pymysql://",
-        # "creator": getconn,
-        "pool_size": 5,
-        "max_overflow": 2,
-        "pool_timeout": 30,
-        "pool_recycle": 1800
-    }
-
-
     SESSION_PROTECTION = 'strong'  # 設置flask-login中對session的安全等級設置
     RESTFUL_JSON = {'default': str}
     JWT_TOKEN_LOCATION = ['cookies']
@@ -74,12 +39,31 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'project.db')
     DEBUG = True
     SECRET_KEY = 'THIS IS Fix'
     JWT_SECRET_KEY = 'super-secret'
     JWT_COOKIE_SECURE = False
 
 
+class TestConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
+        drivername="mysql+pymysql",
+        username=db_user,
+        password=db_pass,
+        database=db_name,
+        query={"unix_socket": unix_socket_path},
+    )
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 30,
+        "pool_recycle": 1800
+    }
+    DEBUG = True
+    SECRET_KEY = 'THIS IS Fix'
+    JWT_SECRET_KEY = 'super-secret'
+    JWT_COOKIE_SECURE = False
 
 
 class ProductionConfig(BaseConfig):
@@ -91,5 +75,6 @@ class ProductionConfig(BaseConfig):
 
 config = {
     'development': DevelopmentConfig,
+    "test": TestConfig,
     'production': ProductionConfig,
 }
