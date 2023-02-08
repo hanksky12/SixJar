@@ -1,6 +1,9 @@
 import os
 import datetime
+import sqlalchemy
 
+from google.cloud.sql.connector import Connector, IPTypes
+import pymysql
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
@@ -8,10 +11,50 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+
+
+
+instance_connection_name = os.environ["INSTANCE_CONNECTION_NAME"]  # e.g. 'project:region:instance'
+db_user = os.environ.get("DB_USER", "")  # e.g. 'my-db-user'
+db_pass = os.environ["DB_PASS"]  # e.g. 'my-db-password'
+db_name = os.environ["DB_NAME"]  # e.g. 'my-database'
+ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+unix_socket_path = os.environ["INSTANCE_UNIX_SOCKET"]
+
+
+
+# def getconn() -> pymysql.connections.Connection:
+#     connector = Connector(ip_type)
+#     conn: pymysql.connections.Connection = connector.connect(
+#         instance_connection_name,
+#         "pymysql",
+#         user=db_user,
+#         password=db_pass,
+#         db=db_name,
+#     )
+#     return conn
+
 class BaseConfig:
-    SQLALCHEMY_TRACK_MODIFICATIONS = False #減少SQLALCHEMY記憶體消耗
+    SQLALCHEMY_TRACK_MODIFICATIONS = False  # 減少SQLALCHEMY記憶體消耗
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'project.db')
-    SESSION_PROTECTION = 'strong' #設置flask-login中對session的安全等級設置
+    SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
+            drivername="mysql+pymysql",
+            username=db_user,
+            password=db_pass,
+            database=db_name,
+            query={"unix_socket": unix_socket_path},
+        )
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        # "url":"mysql+pymysql://",
+        # "creator": getconn,
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 30,
+        "pool_recycle": 1800
+    }
+
+
+    SESSION_PROTECTION = 'strong'  # 設置flask-login中對session的安全等級設置
     RESTFUL_JSON = {'default': str}
     JWT_TOKEN_LOCATION = ['cookies']
     JWT_COOKIE_CSRF_PROTECT = True
@@ -20,15 +63,14 @@ class BaseConfig:
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=2)  # 過期時間
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)  # 過期時間
 
-
-    APISPEC_SPEC=APISpec(
+    APISPEC_SPEC = APISpec(
         title='🐾六個罐子🐾Api文件',
         version='v1',
         plugins=[MarshmallowPlugin()],
         openapi_version='2.0.0'
     )
-    APISPEC_SWAGGER_URL= '/apispec_json/'  # URI to access API Doc JSON
-    APISPEC_SWAGGER_UI_URL= '/apispec/'  # URI to access UI of API Doc
+    APISPEC_SWAGGER_URL = '/apispec_json/'  # URI to access API Doc JSON
+    APISPEC_SWAGGER_UI_URL = '/apispec/'  # URI to access UI of API Doc
 
 
 class DevelopmentConfig(BaseConfig):
@@ -37,12 +79,14 @@ class DevelopmentConfig(BaseConfig):
     JWT_SECRET_KEY = 'super-secret'
     JWT_COOKIE_SECURE = False
 
+
+
+
 class ProductionConfig(BaseConfig):
     DEBUG = False
     SECRET_KEY = os.urandom(10)
     JWT_SECRET_KEY = os.urandom(10)
-    JWT_COOKIE_SECURE = True# 打開cookie的httpOnly 1.不讓ＪＳ使用cookie 2.只有在https下 才送出jwt cookie
-
+    JWT_COOKIE_SECURE = True  # 打開cookie的httpOnly 1.不讓ＪＳ使用cookie 2.只有在https下 才送出jwt cookie
 
 
 config = {
