@@ -1,5 +1,4 @@
-
-from flask import render_template
+from flask import render_template, flash, redirect, url_for
 from flask_jwt_extended import \
     create_access_token, \
     create_refresh_token, \
@@ -8,9 +7,10 @@ from flask_jwt_extended import \
 
 from . import main_bp
 from .. import db
-
+from ..utils import CustomizeError
 
 from webargs.flaskparser import  parser, abort
+from werkzeug.exceptions import HTTPException
 
 @parser.error_handler
 def handle_request_parsing_error(err, req, schema, error_status_code, error_headers):
@@ -21,6 +21,20 @@ def handle_request_parsing_error(err, req, schema, error_status_code, error_head
     abort(status_code, errors=err.messages)
 
 
+@main_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    print("未知錯誤")
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    print(e)
+    flash(f"內部遇到,未知錯誤,請洽資訊人員修正！", category='danger')
+    return redirect(url_for('main.index'))
+
+@main_bp.app_errorhandler(CustomizeError)
+def customizeError(err):
+    flash(f"出錯囉！ {err}", category='danger')
+    return redirect(url_for('main.index'))
 
 @main_bp.app_errorhandler(404)
 def page_not_found(err):
@@ -29,23 +43,9 @@ def page_not_found(err):
 
 @main_bp.app_errorhandler(500)
 def internal_server_error(err):
+    print("500錯誤")
     return render_template('main/500.html'),500
 
 @main_bp.route('/')
 def index():
     return render_template('main/index.html')
-
-# @jwt_required
-# @main_bp.after_request
-# def refresh_expiring_jwts(response):
-#     try:
-#         exp_timestamp = get_jwt()["exp"]
-#         now = datetime.now(timezone.utc)
-#         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-#         if target_timestamp > exp_timestamp:
-#             access_token = create_access_token(identity=get_jwt_identity())
-#             set_access_cookies(response, access_token)
-#         return response
-#     except (RuntimeError, KeyError):
-#         # Case where there is not a valid JWT. Just return the original response
-#         return response

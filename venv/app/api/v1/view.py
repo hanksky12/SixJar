@@ -1,9 +1,9 @@
-from flask_apispec import MethodResource
 from marshmallow import Schema, fields
-from flask_apispec import use_kwargs, marshal_with, doc
+from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity, create_access_token, set_access_cookies
 from flask import make_response
 from flask_login import login_user
+from werkzeug.exceptions import HTTPException
 
 from . import api_bp, api
 from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
@@ -37,14 +37,11 @@ class IncomeAndExpenseSearchApi(MethodResource):
     @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, **kwargs):
-        try:
-            control = IncomeAndExpenseControl(**kwargs)
-            income_and_expense_list, total = control.query()
-            return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
-        except CustomizeError as e:
-            return ResponseTool.params_error(message=f"查詢失敗,{e}")
-        except Exception as e:
-            return ResponseTool.params_error(message=f"查詢失敗,未知錯誤")
+        control = IncomeAndExpenseControl(**kwargs)
+        income_and_expense_list, total = control.query()
+        # total = control.query()
+        return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
+
 
 class IncomeAndExpensePostApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
@@ -63,39 +60,26 @@ class IncomeAndExpenseApi(MethodResource):
     @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def get(self, income_and_expense_id, **kwargs):
-        try:
-            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
-            control.read()
-            return ResponseTool.success(message="查詢成功", data=control.response_data)
-        except CustomizeError as e:
-            return ResponseTool.params_error(message=f"查詢失敗,{e}")
-        except Exception as e:
-            return ResponseTool.params_error(message=f"查詢失敗,未知錯誤")
+        control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
+        control.read()
+        return ResponseTool.success(message="查詢成功", data=control.response_data)
+
 
     @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def put(self, income_and_expense_id, **kwargs):
-        try:
-            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
-            control.update()
-            return ResponseTool.success(message="更新成功", data=control.response_data)
-        except CustomizeError as e:
-            return ResponseTool.params_error(message=f"更新失敗,{e}")
-        except Exception as e:
-            return ResponseTool.params_error(message=f"更新失敗,未知錯誤")
+        control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
+        control.update()
+        return ResponseTool.success(message="更新成功", data=control.response_data)
+
 
     @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie
     def delete(self, income_and_expense_id, **kwargs):
-        print("進到delete")
-        try:
-            control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
-            control.delete()
-            return ResponseTool.success(message="刪除成功", data=control.response_data)
-        except CustomizeError as e:
-            return ResponseTool.params_error(message=f"刪除失敗,{e}")
-        except Exception as e:
-            return ResponseTool.params_error(message=f"刪除失敗,後台未知錯誤")
+        control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
+        control.delete()
+        return ResponseTool.success(message="刪除成功", data=control.response_data)
+
 
 
 class TokenRefreshApi(MethodResource):
@@ -112,20 +96,14 @@ class TokenRefreshApi(MethodResource):
 class UserLoginApi(MethodResource):
     @DecoratorTool.integrate(["Token"], UserLoginSchema, UserIdSchema)
     def post(self, **kwargs):
-        try:
-            control = UserControl()
-            resp = control.login(kwargs["email"],
-                                 kwargs["password"],
-                                 kwargs["remember_me"],
-                                 lambda user_id: make_response(
-                                     ResponseTool.success(message="登入成功", data={"user_id": user_id}))
-                                 )
-            return resp
-        except CustomizeError as e:
-            return ResponseTool.params_error(message=f"登入失敗,{e}", data=kwargs)
-
-        except Exception as e:
-            return ResponseTool.params_error(message=f"登入失敗,未知錯誤")
+        control = UserControl()
+        resp = control.login(kwargs["email"],
+                             kwargs["password"],
+                             kwargs["remember_me"],
+                             lambda user_id: make_response(
+                                 ResponseTool.success(message="登入成功", data={"user_id": user_id}))
+                             )
+        return resp
 
 
 class UserLogoutApi(MethodResource):
@@ -180,6 +158,19 @@ class UserApi(MethodResource):
             return ResponseTool.success(message="刪除成功", data={"user_id": user_id})
         else:
             return ResponseTool.params_error(message="刪除失敗", data=kwargs)
+
+@api_bp.errorhandler(CustomizeError)
+def customizeError(e):
+    return ResponseTool.params_error(message=f"失敗,{e}")
+
+@api_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    print("未知錯誤")
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    print(e)
+    return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 
 
 api_dict = {

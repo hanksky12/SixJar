@@ -1,16 +1,14 @@
 import os
 import datetime
 import sqlalchemy
-# from google.cloud.sql.connector import Connector, IPTypes
-# import pymysql
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-db_user = os.getenv("DB_USER", "")  # e.g. 'my-db-user'
-db_pass = os.getenv("DB_PASS", "")  # e.g. 'my-db-password'
-db_name = os.getenv("DB_NAME", "")  # e.g. 'my-database'
+db_user = os.getenv("DB_USER", "")
+db_pass = os.getenv("DB_PASS", "")
+db_name = os.getenv("DB_NAME", "")
 unix_socket_path = os.getenv("INSTANCE_UNIX_SOCKET", "")
 
 
@@ -39,7 +37,7 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'project.db')
     DEBUG = True
     SECRET_KEY = 'THIS IS Fix'
-    JWT_SECRET_KEY = 'super-secret'
+    JWT_SECRET_KEY = 'THIS IS Fix'
     JWT_COOKIE_SECURE = False
 
 
@@ -56,11 +54,11 @@ class TestConfig(BaseConfig):
         "max_overflow": 2,
         "pool_timeout": 30,
         "pool_recycle": 1800
-    }
+    }#create_engine 的參數
     DEBUG = True
-    SECRET_KEY = 'THIS IS Fix'
-    JWT_SECRET_KEY = 'super-secret'
-    JWT_COOKIE_SECURE = False
+    SECRET_KEY = os.urandom(10)
+    JWT_SECRET_KEY = os.urandom(10)
+    JWT_COOKIE_SECURE = True
 
 
 class ProductionConfig(BaseConfig):

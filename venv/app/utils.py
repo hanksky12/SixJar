@@ -38,6 +38,10 @@ class ResponseTool:
         return cls.result(code=400, message=message, data=data)
 
     @classmethod
+    def inside_error(cls, message="", data=None):
+        return cls.result(code=500, message=message, data=data)
+
+    @classmethod
     def result(cls, code, message="", data=None):
         return {"code": code, "message": message, "data": data}
 

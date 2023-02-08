@@ -32,7 +32,8 @@ export class IncomeAndExpenseTable{
         //外觀
         height: 550,
         theadClasses: "thead-blue",
-        classes:"table table-striped table-hover border-primary table-bordered table-sm  ",
+
+        classes:"table table-striped table-hover border-primary table-bordered table-sm  text-nowrap",
         striped: true,  //間隔顏色
         rowStyle: function(row, index) {
             let classes = ['bg-type1','bg-type2','bg-type3','bg-type4','bg-type5', 'bg-type6']
@@ -104,7 +105,11 @@ export class IncomeAndExpenseTable{
         onLoadError: (status, jqXHR)=> {
             console.log(status)
             console.log(jqXHR["responseJson"])
-            return this.#refreshToken()}, //更新token
+            if (status==401) {
+                return this.#refreshToken()}
+            else {
+                return Util.addAlert("表單資料load失敗！", 'danger')}
+            }, //更新token
         responseHandler:(res)=>{return res},//不建議更改，會影響bootstrap 抓取total 
       })
     }
@@ -168,7 +173,7 @@ export class IncomeAndExpenseTable{
       else if (modalObject.method == "新增"){
         console.log("新增畫面")
         this.table.bootstrapTable('insertRow', {
-          index: 1,
+          index: 0,
           row: {
             id: responseData.id,
             income_and_expense: responseData.income_and_expense,
@@ -177,6 +182,7 @@ export class IncomeAndExpenseTable{
             money: responseData.money,
             remark: responseData.remark
           }});
+        this.table.bootstrapTable('scrollTo','bottom');
       }
     }
   

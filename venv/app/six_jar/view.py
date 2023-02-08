@@ -6,7 +6,7 @@ from .form import AutomaticDistributionIncomeForm, ManuallyDistributeIncomeForm,
 from . import six_jar_bp
 from .model import Jar, Savings, IncomeAndExpense, Jars
 from .control import IncomeAndExpenseControl
-from ..utils import flash_form_error
+from ..utils import flash_form_error, CustomizeError
 
 
 @six_jar_bp.route("/expense", methods=["POST", "GET"])

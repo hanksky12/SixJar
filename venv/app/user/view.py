@@ -1,11 +1,11 @@
-from flask import render_template, flash, request, flash, redirect, url_for
+from flask import render_template, flash, request, redirect, url_for
 from flask_jwt_extended import unset_jwt_cookies, jwt_required, get_jwt_identity
 from flask_login import login_user, current_user, login_required, logout_user
 
 from . import user_bp
 from .form import LoginForm, RegisterForm, UserInfoForm
 from .control import UserControl
-from ..utils import flash_form_error, JwtTool
+from ..utils import flash_form_error, JwtTool,CustomizeError
 from .model import User
 from .. import db, jwt, login_manager
 
@@ -29,9 +29,7 @@ def login3():
     )
     flash("登入成功", category='info')
     return resp
-    # except Exception as e:
-    #     flash(f"登入失敗,{e}", category='danger')
-    #     return redirect(url_for('user.login3'))
+
 
 
 @user_bp.route("/register", methods=["POST", "GET"])
