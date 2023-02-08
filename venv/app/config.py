@@ -1,7 +1,6 @@
 import os
 import datetime
 import sqlalchemy
-
 # from google.cloud.sql.connector import Connector, IPTypes
 # import pymysql
 
@@ -9,12 +8,10 @@ from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-instance_connection_name = os.environ["INSTANCE_CONNECTION_NAME"]  # e.g. 'project:region:instance'
-db_user = os.environ.get("DB_USER", "")  # e.g. 'my-db-user'
-db_pass = os.environ["DB_PASS"]  # e.g. 'my-db-password'
-db_name = os.environ["DB_NAME"]  # e.g. 'my-database'
-ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
-unix_socket_path = os.environ["INSTANCE_UNIX_SOCKET"]
+db_user = os.getenv("DB_USER", "")  # e.g. 'my-db-user'
+db_pass = os.getenv("DB_PASS", "")  # e.g. 'my-db-password'
+db_name = os.getenv("DB_NAME", "")  # e.g. 'my-database'
+unix_socket_path = os.getenv("INSTANCE_UNIX_SOCKET", "")
 
 
 class BaseConfig:

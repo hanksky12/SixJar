@@ -56,6 +56,7 @@ class FlaskApp:
 
 
 def create_app():
+    load_dotenv()
     FlaskApp().create()
     app = FlaskApp().app
     jwt.init_app(app)
