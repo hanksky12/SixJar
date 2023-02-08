@@ -18,48 +18,41 @@ instance_connection_name = os.environ["INSTANCE_CONNECTION_NAME"]  # e.g. 'proje
 db_user = os.environ.get("DB_USER", "")  # e.g. 'my-db-user'
 db_pass = os.environ["DB_PASS"]  # e.g. 'my-db-password'
 db_name = os.environ["DB_NAME"]  # e.g. 'my-database'
-
 ip_type = IPTypes.PRIVATE if os.environ.get("PRIVATE_IP") else IPTypes.PUBLIC
+unix_socket_path = os.environ["INSTANCE_UNIX_SOCKET"]
 
-connector = Connector(ip_type)
 
 
-def getconn() -> pymysql.connections.Connection:
-    conn: pymysql.connections.Connection = connector.connect(
-        instance_connection_name,
-        "pymysql",
-        user=db_user,
-        password=db_pass,
-        db=db_name,
-    )
-    return conn
+# def getconn() -> pymysql.connections.Connection:
+#     connector = Connector(ip_type)
+#     conn: pymysql.connections.Connection = connector.connect(
+#         instance_connection_name,
+#         "pymysql",
+#         user=db_user,
+#         password=db_pass,
+#         db=db_name,
+#     )
+#     return conn
 
 class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # 減少SQLALCHEMY記憶體消耗
 
-    # SQLALCHEMY_DATABASE_URI = "mysql+pymysql://"
+    SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
+            drivername="mysql+pymysql",
+            username=db_user,
+            password=db_pass,
+            database=db_name,
+            query={"unix_socket": unix_socket_path},
+        )
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "url":"mysql+pymysql://",
-        "creator": getconn,
+        # "url":"mysql+pymysql://",
+        # "creator": getconn,
         "pool_size": 5,
         "max_overflow": 2,
         "pool_timeout": 30,
         "pool_recycle": 1800
     }
 
-    # SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
-    #     drivername="mysql+pymysql",
-    #     username="iamuser@%",
-    #     password="iamuser",
-    #     database="SixJar",
-    #     query={"unix_socket": "/cloudsql/sixjar:asia-east1:sixjar"},
-    # )
-    # SQLALCHEMY_ENGINE_OPTIONS = {
-    #     "pool_size": 5,
-    #     "max_overflow": 2,
-    #     "pool_timeout": 30,
-    #     "pool_recycle": 1800
-    # }
 
     SESSION_PROTECTION = 'strong'  # 設置flask-login中對session的安全等級設置
     RESTFUL_JSON = {'default': str}
@@ -85,6 +78,8 @@ class DevelopmentConfig(BaseConfig):
     SECRET_KEY = 'THIS IS Fix'
     JWT_SECRET_KEY = 'super-secret'
     JWT_COOKIE_SECURE = False
+
+
 
 
 class ProductionConfig(BaseConfig):
