@@ -112,6 +112,7 @@ export  class JarForm {
 
     isChange(currentRow, modalObject){
         this.#getValue()
+        if (modalObject.method=="刪除") return true
         if (this.money !=currentRow.money) return true
         if (this.remark !=currentRow.remark) return true
         if (this.date !=currentRow.date) return true
