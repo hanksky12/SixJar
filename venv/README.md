@@ -26,8 +26,8 @@ https://sixjar.de.r.appspot.com/
 	1. Flask-WTF
 	2. Jinja2
 2. JS
-	1. AJAX (fetch)
-	2. Bootstrap
-	3. ES6語法(Promise)
+	1. AJAX (Fetch)
+	2. ES6語法
+3. Bootstrap
 
 
