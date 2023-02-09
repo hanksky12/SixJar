@@ -38,7 +38,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SECRET_KEY = 'THIS IS Fix'
     JWT_SECRET_KEY = 'THIS IS Fix'
-    JWT_COOKIE_SECURE = False
+    JWT_COOKIE_SECURE = True
 
 
 class TestConfig(BaseConfig):

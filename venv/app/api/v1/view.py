@@ -30,16 +30,20 @@ def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return User.query.filter_by(id=identity).one_or_none()
 
+@jwt.needs_fresh_token_loader
+def token_not_fresh_callback(jwt_header, jwt_payload):
+
+    return ResponseTool.params_error(message=f"重大操作，請登入")
+
 
 class IncomeAndExpenseSearchApi(MethodResource):
     @doc(tags=["IncomeAndExpense💰"])
     @use_kwargs(QueryIncomeAndExpenseSchema(), location='querystring')
     @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         income_and_expense_list, total = control.query()
-        # total = control.query()
         return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
 
 
@@ -47,7 +51,7 @@ class IncomeAndExpensePostApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
 
     @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def post(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.insert()
@@ -58,7 +62,7 @@ class IncomeAndExpenseApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
 
     @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.read()
@@ -66,7 +70,7 @@ class IncomeAndExpenseApi(MethodResource):
 
 
     @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def put(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.update()
@@ -74,7 +78,7 @@ class IncomeAndExpenseApi(MethodResource):
 
 
     @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie(fresh=True)
     def delete(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.delete()
@@ -88,7 +92,7 @@ class TokenRefreshApi(MethodResource):
     def post(self):
         user_id = get_jwt_identity()
         resp = make_response(ResponseTool.success(message="token 更新成功"), 302)
-        access_token = create_access_token(identity=user_id)
+        access_token = create_access_token(identity=user_id, fresh=False)
         set_access_cookies(resp, access_token)
         return resp
 
@@ -131,13 +135,13 @@ class UserApi(MethodResource):
     tags_list = ["User😀"]
 
     @DecoratorTool.integrate(tags_list, EmptySchema, UserInfoSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, user_id, **kwargs):  # 傳給 verify_user_id_and_jwt_cookie
         return ResponseTool.success(message="查詢成功", data={"email": current_user.email,
                                                               "name": current_user.name})
 
     @DecoratorTool.integrate_repeat(tags_list, UserPutSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def put(self, user_id, **kwargs):
         control = UserControl()
         is_success = control.change_info(
@@ -150,7 +154,7 @@ class UserApi(MethodResource):
             return ResponseTool.params_error(message="修改失敗", data=kwargs)
 
     @DecoratorTool.integrate(tags_list, EmptySchema, UserIdSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
     def delete(self, user_id, **kwargs):
         control = UserControl()
         is_success = control.delete_info(user_id)
@@ -165,7 +169,6 @@ def customizeError(e):
 
 @api_bp.app_errorhandler(Exception)
 def handle_exception(e):
-    print("未知錯誤")
     # pass through HTTP errors
     if isinstance(e, HTTPException):
         return e

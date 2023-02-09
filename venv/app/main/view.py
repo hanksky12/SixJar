@@ -23,7 +23,6 @@ def handle_request_parsing_error(err, req, schema, error_status_code, error_head
 
 @main_bp.app_errorhandler(Exception)
 def handle_exception(e):
-    print("未知錯誤")
     # pass through HTTP errors
     if isinstance(e, HTTPException):
         return e
@@ -43,7 +42,6 @@ def page_not_found(err):
 
 @main_bp.app_errorhandler(500)
 def internal_server_error(err):
-    print("500錯誤")
     return render_template('main/500.html'),500
 
 @main_bp.route('/')

@@ -18,7 +18,7 @@ def flash_form_error(form):
 class JwtTool:
     @staticmethod
     def setting_cookie(resp, user):
-        access_token = create_access_token(identity=user)
+        access_token = create_access_token(identity=user, fresh=True)
         refresh_token = create_refresh_token(identity=user)
         set_access_cookies(resp, access_token)
         set_refresh_cookies(resp, refresh_token)
@@ -72,14 +72,15 @@ class DecoratorTool:
         return outer_wrapper
 
     @staticmethod
-    def verify_user_id_and_jwt_cookie(f):
-        @jwt_required()
-        def wrapper(*args, **kwargs):
-            if current_user.id != kwargs["user_id"]:
-                return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
-            return f(*args, **kwargs)
-
-        return wrapper
+    def verify_user_id_and_jwt_cookie(fresh=False):
+        def outer_wrapper(f):
+            @jwt_required(fresh=fresh)
+            def wrapper(*args, **kwargs):
+                if current_user.id != kwargs["user_id"]:
+                    return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
+                return f(*args, **kwargs)
+            return wrapper
+        return outer_wrapper
 
 
 class SchemaTool:
