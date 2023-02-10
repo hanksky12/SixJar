@@ -32,8 +32,7 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 @jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
-
-    return ResponseTool.params_error(message=f"重大操作，請登入")
+    return ResponseTool.params_error(message=f"重要操作，請輸入密碼")
 
 
 class IncomeAndExpenseSearchApi(MethodResource):

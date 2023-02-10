@@ -136,52 +136,59 @@ export class IncomeAndExpenseTable{
     }
   
     cleanSearchEvent(){
-        Util.removeAlert()
-      $('#clean_search_btn').click(function() {
-      let idArray = [
-        'selectTypeForSearch',
-        'selectJarForSearch',
-        'minimum_money',
-        'maximum_money',
-        'earliest_date',
-        'latest_date'
-        ]
-      $.each(idArray, function (index, id) {
-        document.getElementById(id).value = ""
-      })
-    })
+      Util.removeAlert()
+      $('#clean_search_btn').click(
+        ()=> {
+            let idArray = [
+              'selectTypeForSearch',
+              'selectJarForSearch',
+              'minimum_money',
+              'maximum_money',
+              'earliest_date',
+              'latest_date'
+              ]
+            $.each(idArray, function (index, id) {
+              document.getElementById(id).value = ""
+            }
+          )
+        }
+      )
     }
   
-    changeDisplayRecord(modalObject, currentRowObject, responseData){
-      if (modalObject.method == "刪除"){
+    changeDisplayRecord(jarModalObject, currentRowObject, responseData){
+      if (jarModalObject.method == "刪除"){
         console.log("刪除畫面id:"+currentRowObject.id)
         this.table.bootstrapTable('removeByUniqueId', currentRowObject.id); 
       }
-      else if (modalObject.method == "修改"){
+      else if (jarModalObject.method == "修改"){
         console.log("修改畫面id:"+currentRowObject.id)
         this.table.bootstrapTable('updateByUniqueId', {
-          id: currentRowObject.id, 
-          replace:false,//有出現的做部分更換
-          row: {
-            income_and_expense: responseData.income_and_expense,
-            jar_name: responseData.jar_name,
-            date: responseData.date,
-            money: responseData.money,
-            remark: responseData.remark
-          }});
+            id: currentRowObject.id, 
+            replace:false,//有出現的做部分更換
+            row: {
+              income_and_expense: responseData.income_and_expense,
+              jar_name: responseData.jar_name,
+              date: responseData.date,
+              money: responseData.money,
+              remark: responseData.remark
+            }
+          }
+        )
       }
-      else if (modalObject.method == "新增"){
+      else if (jarModalObject.method == "新增"){
         console.log("新增畫面")
         this.table.bootstrapTable('insertRow', {
-          index: 0,
-          row: {
-            id: responseData.id,
-            income_and_expense: responseData.income_and_expense,
-            jar_name: responseData.jar_name,
-            date: responseData.date,
-            money: responseData.money,
-            remark: responseData.remark
-          }});
+            index: 0,
+            row: {
+              id: responseData.id,
+              income_and_expense: responseData.income_and_expense,
+              jar_name: responseData.jar_name,
+              date: responseData.date,
+              money: responseData.money,
+              remark: responseData.remark
+            }
+          }
+        )
         this.table.bootstrapTable('scrollTo','bottom');
       }
     }
@@ -194,9 +201,7 @@ export class IncomeAndExpenseTable{
         user_id:this.constantObject.userId
       }
       if (params.sort){temp["sort"] = params.sort} //如果有點擊欄位，就會抓到欄位名稱
-      if ($('#selectTypeForSearch').val()){
-        temp["income_and_expense"] = $('#selectTypeForSearch').val()=="收入"?"income":"expense"
-      }
+      if ($('#selectTypeForSearch').val()){temp["income_and_expense"] = $('#selectTypeForSearch').val()=="收入"?"income":"expense"}
       if ($('#selectJarForSearch').val()){temp["jar_name"] = $('#selectJarForSearch').val()}
       let idArray = ['minimum_money','maximum_money',"earliest_date","latest_date"]
       for (let id of idArray) { if ($("#"+id).val()){temp[id] = $("#"+id).val()}}
@@ -215,8 +220,8 @@ export class IncomeAndExpenseTable{
   }
 
   async #refreshToken(){
-    let requestObject = new RequestData()
-    let tokenRequest = requestObject.getToken(this.constantObject)
+    let requestObject = new RequestData(this.constantObject)
+    let tokenRequest = requestObject.getRefreshToken()
     await Ajax.send(tokenRequest)
     await this.table.bootstrapTable('refresh');
 }
