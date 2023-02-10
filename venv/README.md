@@ -19,7 +19,7 @@ https://sixjar.de.r.appspot.com/
 	3. CSRF protection
 5. RestApi (Flask-RESTful)
 	1. webargs 資料驗證篩選
-	2. apispec文件
+	2. apispec文件 https://sixjar.de.r.appspot.com/apispec/
 	
 ### 前端
 1. Template,Form 
