@@ -41,6 +41,13 @@ class DevelopmentConfig(BaseConfig):
     JWT_COOKIE_SECURE = False
 
 
+class LocalTestConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'test.db')
+    DEBUG = True
+    SECRET_KEY = os.urandom(10)
+    JWT_SECRET_KEY = os.urandom(10)
+    JWT_COOKIE_SECURE = True
+
 class TestConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
         drivername="mysql+pymysql",
@@ -70,6 +77,7 @@ class ProductionConfig(BaseConfig):
 
 config = {
     'development': DevelopmentConfig,
+    "local_test": LocalTestConfig,
     "test": TestConfig,
     'production': ProductionConfig,
 }

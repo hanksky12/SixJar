@@ -32,6 +32,19 @@ class Jars:
     def names():
         app = FlaskApp().app
         with app.app_context():
+
+            jar_dict = {
+                "財務自由": 10,
+                "長期儲蓄": 10,
+                "教育成長": 10,
+                "休閒玩樂": 10,
+                "生活必須": 55,
+                "捐贈付出": 5
+            }
+            jar_list = [Jar(name=key, distribution_ratio=value) for key, value in jar_dict.items()]
+            db.session.add_all(jar_list)
+            db.session.commit()
+
             return [jar.name for jar in Jar.query.order_by(Jar.id).all()]
 
     @staticmethod

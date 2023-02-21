@@ -15,7 +15,7 @@ class IncomeAndExpenseControl:
         self.__distribution_money_list = None
         self.__income_and_expense_id = None
 
-    def query(self):
+    def query(self) -> object:
         order_by = self.__create_order_by()
         filter = self.__create_filter()
         income_and_expense_object = self.__query(filter, order_by)

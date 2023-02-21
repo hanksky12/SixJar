@@ -11,6 +11,14 @@ from flask_login import LoginManager
 from contextlib import contextmanager
 from .config import config
 
+# from .six_jar.model import Jar
+
+class FlaskApp:
+    @classmethod
+    def create(cls):
+        cls.app = Flask(__name__,
+                    static_url_path='/static',  # 虛擬靜態路徑
+                    static_folder='static/')  # 指定靜態上層根目錄
 
 
 metadata = MetaData(
@@ -45,16 +53,6 @@ login_manager.login_message = "請先登入" #未登入的訊息
 login_manager.login_message_category = "info" #未登入的訊息等級
 
 
-
-class FlaskApp:
-    @classmethod
-    def create(cls):
-        cls.app = Flask(__name__,
-                    static_url_path='/static',  # 虛擬靜態路徑
-                    static_folder='static/')  # 指定靜態上層根目錄
-
-
-
 def create_app():
     load_dotenv()
     FlaskApp().create()
@@ -69,6 +67,9 @@ def create_app():
     #避免循環import
     from .main import main_bp
     app.register_blueprint(main_bp)
+
+    from .commands import commands_bp
+    app.register_blueprint(commands_bp)
 
     from .user import user_bp
     app.register_blueprint(user_bp, url_prefix='/user')
@@ -86,3 +87,19 @@ def create_app():
 
     docs.init_app(app)
     return app
+
+
+def init_db():
+    with app.app_context():
+        db.create_all()
+        jar_dict = {
+            "財務自由": 10,
+            "長期儲蓄": 10,
+            "教育成長": 10,
+            "休閒玩樂": 10,
+            "生活必須": 55,
+            "捐贈付出": 5
+        }
+        jar_list = [Jar(name=key, distribution_ratio=value) for key, value in jar_dict.items()]
+        db.session.add_all(jar_list)
+        db.session.commit()
