@@ -1,5 +1,7 @@
+from sqlalchemy.exc import OperationalError
 
 from .. import db, FlaskApp
+from ..db_init_data import jar_dict
 
 
 class Jar(db.Model):
@@ -32,20 +34,15 @@ class Jars:
     def names():
         app = FlaskApp().app
         with app.app_context():
-
-            jar_dict = {
-                "財務自由": 10,
-                "長期儲蓄": 10,
-                "教育成長": 10,
-                "休閒玩樂": 10,
-                "生活必須": 55,
-                "捐贈付出": 5
-            }
-            jar_list = [Jar(name=key, distribution_ratio=value) for key, value in jar_dict.items()]
-            db.session.add_all(jar_list)
-            db.session.commit()
-
-            return [jar.name for jar in Jar.query.order_by(Jar.id).all()]
+            try:
+                return [jar.name for jar in Jar.query.order_by(Jar.id).all()]
+            except OperationalError as e:
+                # print(e)
+                db.create_all()
+                jar_list = [Jar(name=key, distribution_ratio=value) for key, value in jar_dict.items()]
+                db.session.add_all(jar_list)
+                db.session.commit()
+                return jar_dict.keys()
 
     @staticmethod
     def length():

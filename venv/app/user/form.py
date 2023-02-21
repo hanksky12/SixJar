@@ -1,4 +1,3 @@
-
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, ValidationError, IntegerField, BooleanField
 from wtforms.validators import DataRequired
@@ -6,8 +5,8 @@ from wtforms import validators
 from wtforms.fields import EmailField
 import email_validator
 
-
 from .model import User
+
 
 class EmailForm(FlaskForm):
     email = EmailField('Email', validators=[
@@ -35,7 +34,6 @@ class UserInfoForm(NameForm, PasswordForm):
     submit = SubmitField('修改')
 
 
-
 class LoginForm(EmailForm, PasswordForm):
     remember_me = BooleanField("記住我")
     submit = SubmitField('登入')
@@ -44,7 +42,6 @@ class LoginForm(EmailForm, PasswordForm):
 class RegisterForm(EmailForm, UserInfoForm):
     submit = SubmitField('註冊為會員')
 
-    def validate_email(self, mail):# 自定義驗證的項目 開頭validate 結尾要欄位名稱
+    def validate_email(self, mail):  # 自定義驗證的項目 開頭validate 結尾要欄位名稱
         if User.query.filter_by(email=mail.data).first():
             raise ValidationError('Mail已被註冊')
-
