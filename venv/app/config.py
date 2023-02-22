@@ -43,6 +43,7 @@ class DevelopmentConfig(BaseConfig):
 
 class LocalTestConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'test.db')
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)  # 過期時間
     DEBUG = True
     SECRET_KEY = 'THIS IS Fix'
     JWT_SECRET_KEY = 'THIS IS Fix'
