@@ -52,6 +52,8 @@ login_manager.login_message = "請先登入" #未登入的訊息
 login_manager.login_message_category = "info" #未登入的訊息等級
 
 
+
+
 def create_app():
     load_dotenv()
     FlaskApp().create()
@@ -82,6 +84,7 @@ def create_app():
 
     #分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
     with app.app_context():
+        print("create_all  2")
         db.create_all()
 
     docs.init_app(app)

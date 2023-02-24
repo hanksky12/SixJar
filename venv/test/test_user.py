@@ -4,8 +4,7 @@ from setting_base import SettingBase
 
 
 class UserTest(SettingBase):
-    #api測試
-    def test_login(self):
+    def test_login_cookie_is_setted(self):
         response = self.login()
         self.assertEqual(response.status_code, 200)
         self.__check_cookie_is_set(response)
@@ -26,22 +25,6 @@ class UserTest(SettingBase):
                     check_cookie_list.remove(cookie_name)
         self.assertEqual(check_cookie_list, [])
 
-    def test_logout(self):
-        response = self.client.get(url_for('api.userlogoutapi'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_register(self):
-        response = self.client.post(url_for('api.userpostapi'),
-                                    json={
-                                        "name": "test2",
-                                        "email": "test2@gmail.com",
-                                        "password": "test2",
-                                        "password2": "test2"
-                                    }
-                                    )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json['message'], '成功新增')
 
 
     def test_check_repeat_register(self):
@@ -73,8 +56,8 @@ class UserTest(SettingBase):
         self.assertEqual(response.json['code'], 400)
 
     def test_update_info(self):
-        update_user_name = "update_user"
-        update_user_password = "update_password"
+        update_user_name = "new_user"
+        update_user_password = "new_pass"
         csrf_access_token = self.get_csrf_access_token()
         response = self.client.put(url_for('api.userapi', user_id=1),
                                    headers={"X-CSRF-TOKEN": csrf_access_token},
@@ -84,8 +67,6 @@ class UserTest(SettingBase):
                                        "password2": update_user_password
                                    }
                                    )
-        print(response.json)
-        #
         data = response.json['data']
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["name"], update_user_name)

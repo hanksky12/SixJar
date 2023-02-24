@@ -219,6 +219,8 @@ class IncomeAndExpenseControl:
                             for i in range(1, Jars.length() + 1)]
             db.session.add_all(savings_list)
             db.session.commit()
+        else:
+            print("init_savings not none")
 
     def get_saving_list(self):
         saving_object_list = Savings.query \
