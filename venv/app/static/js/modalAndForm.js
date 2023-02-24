@@ -40,8 +40,6 @@ class PasswordModal extends AbstractModal {
   }
 }
 
-
-
 export class JarModal extends AbstractModal {
     constructor() {
       super('jarModal')
@@ -98,17 +96,18 @@ export class JarModal extends AbstractModal {
 export  class CurrentRow {
     #array
     getInfo(button, method, today) {
-        if (method == "新增")
-        this.#array = ["0", "", "", today, 0, ""]
-        else
-        this.#array = []
-        this.takeCurrentRowDataToArray(button)
-        this.id = this.#array[0];
-        this.income_and_expense = this.#array[1];
-        this.jar_name = this.#array[2];
-        this.date = this.#array[3];
-        this.money = this.#array[4];
-        this.remark = this.#array[5];
+        if (method == "新增"){
+          this.#array = ["0", "", "", today, 0, ""]}
+        else{
+          this.#array = []
+          this.takeCurrentRowDataToArray(button)
+          this.id = this.#array[0];
+          this.income_and_expense = this.#array[1];
+          this.jar_name = this.#array[2];
+          this.date = this.#array[3];
+          this.money = this.#array[4];
+          this.remark = this.#array[5];
+      }
     }
 
     takeCurrentRowDataToArray(button) {
@@ -121,8 +120,6 @@ export  class CurrentRow {
       }
     }
   
-
-
 export  class JarForm extends AbstractForm{
     constructor() {
         super('jar-form')

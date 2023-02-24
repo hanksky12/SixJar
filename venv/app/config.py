@@ -41,6 +41,14 @@ class DevelopmentConfig(BaseConfig):
     JWT_COOKIE_SECURE = False
 
 
+class LocalTestConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'test.db')
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)  # 過期時間
+    DEBUG = True
+    SECRET_KEY = 'THIS IS Fix'
+    JWT_SECRET_KEY = 'THIS IS Fix'
+    JWT_COOKIE_SECURE = False
+
 class TestConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
         drivername="mysql+pymysql",
@@ -55,7 +63,7 @@ class TestConfig(BaseConfig):
         "pool_timeout": 30,
         "pool_recycle": 1800
     }#create_engine 的參數
-    DEBUG = True
+    DEBUG = False
     SECRET_KEY = os.urandom(10)
     JWT_SECRET_KEY = os.urandom(10)
     JWT_COOKIE_SECURE = True
@@ -70,6 +78,7 @@ class ProductionConfig(BaseConfig):
 
 config = {
     'development': DevelopmentConfig,
+    "local_test": LocalTestConfig,
     "test": TestConfig,
     'production': ProductionConfig,
 }

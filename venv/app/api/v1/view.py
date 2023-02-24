@@ -24,7 +24,6 @@ from .schema import \
     QueryIncomeAndExpenseSchema, \
     RequestIncomeAndExpenseSchema
 
-
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
@@ -33,7 +32,6 @@ def user_lookup_callback(_jwt_header, jwt_data):
 @jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
     return ResponseTool.params_error(message=f"重要操作，請輸入密碼")
-
 
 class IncomeAndExpenseSearchApi(MethodResource):
     @doc(tags=["IncomeAndExpense💰"])
@@ -67,7 +65,6 @@ class IncomeAndExpenseApi(MethodResource):
         control.read()
         return ResponseTool.success(message="查詢成功", data=control.response_data)
 
-
     @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie()
     def put(self, income_and_expense_id, **kwargs):
@@ -75,14 +72,12 @@ class IncomeAndExpenseApi(MethodResource):
         control.update()
         return ResponseTool.success(message="更新成功", data=control.response_data)
 
-
     @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
     @DecoratorTool.verify_user_id_and_jwt_cookie(fresh=True)
     def delete(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.delete()
         return ResponseTool.success(message="刪除成功", data=control.response_data)
-
 
 
 class TokenRefreshApi(MethodResource):
@@ -162,17 +157,19 @@ class UserApi(MethodResource):
         else:
             return ResponseTool.params_error(message="刪除失敗", data=kwargs)
 
-@api_bp.errorhandler(CustomizeError)
-def customizeError(e):
-    return ResponseTool.params_error(message=f"失敗,{e}")
 
-@api_bp.app_errorhandler(Exception)
-def handle_exception(e):
-    # pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-    print(e)
-    return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
+# @api_bp.errorhandler(CustomizeError)
+# def customizeError(e):
+#     return ResponseTool.params_error(message=f"失敗,{e}")
+#
+#
+# @api_bp.app_errorhandler(Exception)
+# def handle_exception(e):
+#     # pass through HTTP errors
+#     if isinstance(e, HTTPException):
+#         return e
+#     print(e)
+#     return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 
 
 api_dict = {

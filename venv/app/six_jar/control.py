@@ -2,9 +2,11 @@ import math
 import copy
 from sqlalchemy import text, desc
 
+
 from .model import IncomeAndExpense, Savings, Jar, Jars
 from .. import db
 from ..utils import CustomizeError
+
 
 
 class IncomeAndExpenseControl:
@@ -15,7 +17,7 @@ class IncomeAndExpenseControl:
         self.__distribution_money_list = None
         self.__income_and_expense_id = None
 
-    def query(self):
+    def query(self) -> object:
         order_by = self.__create_order_by()
         filter = self.__create_filter()
         income_and_expense_object = self.__query(filter, order_by)
@@ -217,6 +219,8 @@ class IncomeAndExpenseControl:
                             for i in range(1, Jars.length() + 1)]
             db.session.add_all(savings_list)
             db.session.commit()
+        else:
+            print("init_savings not none")
 
     def get_saving_list(self):
         saving_object_list = Savings.query \
@@ -237,4 +241,8 @@ class IncomeAndExpenseControl:
     @property
     def response_data(self):
         return self.__response_data
+
+
+
+
 

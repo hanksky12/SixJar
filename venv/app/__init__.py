@@ -12,6 +12,13 @@ from contextlib import contextmanager
 from .config import config
 
 
+class FlaskApp:
+    @classmethod
+    def create(cls):
+        cls.app = Flask(__name__,
+                    static_url_path='/static',  # 虛擬靜態路徑
+                    static_folder='static/')  # 指定靜態上層根目錄
+
 
 metadata = MetaData(
     naming_convention={
@@ -46,14 +53,6 @@ login_manager.login_message_category = "info" #未登入的訊息等級
 
 
 
-class FlaskApp:
-    @classmethod
-    def create(cls):
-        cls.app = Flask(__name__,
-                    static_url_path='/static',  # 虛擬靜態路徑
-                    static_folder='static/')  # 指定靜態上層根目錄
-
-
 
 def create_app():
     load_dotenv()
@@ -65,6 +64,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+
 
     #避免循環import
     from .main import main_bp
@@ -79,10 +79,14 @@ def create_app():
     from .api.v1 import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
 
+    from .commands import commands_bp
+    app.register_blueprint(commands_bp)
 
-    # 分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
+    #分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
     with app.app_context():
+        print("create_all  2")
         db.create_all()
 
     docs.init_app(app)
     return app
+
