@@ -23,9 +23,9 @@ class SettingBase(TestCase):
 
     def setUp(self):
         # setUp每個獨立測試前置 setUpClass一整個class的前置(會造成test互相干擾)
+        self.__check_env()
         db.drop_all()
         db.create_all()
-        self.__check_env()
         self.__init_value()
         self.__insert_test_user()
         self.__insert_savings()

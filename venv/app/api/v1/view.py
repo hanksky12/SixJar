@@ -71,6 +71,16 @@ class IncomeAndExpensePostApi(MethodResource):
         return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
 
 
+# class IncomeAndExpensePostFakeApi(MethodResource):
+#     tags_list = ["IncomeAndExpense💰"]
+#
+#     # @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
+#     # @DecoratorTool.verify_user_id_and_jwt_cookie()
+#     def post(self, **kwargs):
+#         control = IncomeAndExpenseControl(**kwargs)
+#         control.insert()
+#         return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
+
 class IncomeAndExpenseApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
 
@@ -174,18 +184,18 @@ class UserApi(MethodResource):
             return ResponseTool.params_error(message="刪除失敗", data=kwargs)
 
 
-# @api_bp.errorhandler(CustomizeError)
-# def customizeError(e):
-#     return ResponseTool.params_error(message=f"失敗,{e}")
-#
-#
-# @api_bp.app_errorhandler(Exception)
-# def handle_exception(e):
-#     # pass through HTTP errors
-#     if isinstance(e, HTTPException):
-#         return e
-#     print(e)
-#     return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
+@api_bp.errorhandler(CustomizeError)
+def customizeError(e):
+    return ResponseTool.params_error(message=f"失敗,{e}")
+
+
+@api_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    print(e)
+    return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 
 
 api_dict = {
@@ -195,9 +205,10 @@ api_dict = {
     "/users/logout": UserLogoutApi,
     "/token/refresh": TokenRefreshApi,
     "/income-and-expense": IncomeAndExpensePostApi,
+    "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
+    # "/income-and-expense/fake-data/<int:number>": IncomeAndExpensePostFakeApi,
     "/income-and-expense/search/list": IncomeAndExpenseSearchListApi,
     "/income-and-expense/search/chart": IncomeAndExpenseSearchChartApi,
-    "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
 }
 
 for route, api_resource in api_dict.items():

@@ -13,24 +13,24 @@ from webargs.flaskparser import  parser, abort
 from werkzeug.exceptions import HTTPException
 
 
-#
-# @parser.error_handler
-# def handle_request_parsing_error(err, req, schema, error_status_code, error_headers):
-#     """webargs error handler that uses Flask-RESTful's abort function to return
-#     a JSON error response to the client.
-#     """
-#     status_code = error_status_code or 400
-#     abort(status_code, errors=err.messages)
-#
-#
-# @main_bp.app_errorhandler(Exception)
-# def handle_exception(e):
-#     # pass through HTTP errors
-#     if isinstance(e, HTTPException):
-#         return e
-#     print(e)
-#     flash(f"內部遇到,未知錯誤,請洽資訊人員修正！", category='danger')
-#     return redirect(url_for('main.index'))
+
+@parser.error_handler
+def handle_request_parsing_error(err, req, schema, error_status_code, error_headers):
+    """webargs error handler that uses Flask-RESTful's abort function to return
+    a JSON error response to the client.
+    """
+    status_code = error_status_code or 400
+    abort(status_code, errors=err.messages)
+
+
+@main_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    print(e)
+    flash(f"內部遇到,未知錯誤,請洽資訊人員修正！", category='danger')
+    return redirect(url_for('main.index'))
 
 @main_bp.app_errorhandler(CustomizeError)
 def customizeError(err):

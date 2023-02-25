@@ -40,7 +40,6 @@ def insert_initial_values(*args, **kwargs):
 
 
 with FlaskApp().app.app_context():
-    print("create_all  first")
     db.create_all()
 
 
