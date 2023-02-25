@@ -144,7 +144,7 @@ class UserPostApi(MethodResource):
 class UserApi(MethodResource):
     tags_list = ["User😀"]
 
-    @DecoratorTool.integrate(tags_list, UserIdSchema, UserInfoSchema, method='GET')
+    @DecoratorTool.integrate(tags_list, EmptySchema, UserInfoSchema, method='GET')#本來網址就會帶user_id
     @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, user_id, **kwargs):  # 傳給 verify_user_id_and_jwt_cookie
         return ResponseTool.success(message="查詢成功", data={"email": current_user.email,
