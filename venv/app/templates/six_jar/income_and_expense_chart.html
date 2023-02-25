@@ -1,0 +1,44 @@
+{% extends "common/mybase.html" %}
+
+
+{% block section1 %}
+
+<h3 class="text-primary "><b>📊支出收入圖</b></h3>
+<p class="text-success"><i>(適合的條件，才能觀察到有用的資訊)</i></p>
+<div style="border:1px blue dotted ;padding:6px 5px;">
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-1">
+          <label class="input-group-text" >圖表:</label>
+          <select class="form-select" id="selectChart" >
+            <option value="" selected>請選擇..</option>
+            <option value="圓餅">圓餅圖</option>
+            <option value="長條">長條圖</option>
+            <option value="折線">折線圖</option>
+            <option value="直方">直方圖</option>
+            <option value="散佈">散佈圖</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  {% include 'six_jar/condition_row.html' %}
+  </div>
+</div>
+<div class=" mb-3">
+  <button class="btn btn-primary" id="search_btn" >查詢</button>
+  <button class="btn btn-dark" id="clean_search_btn" >清空</button>
+</div>
+
+
+{% include 'six_jar/alert.html' %}
+
+<div id="jarChart"  style="width:90%;height:550px;">
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{url_for('static', filename='js/income_and_expense_chart.js')}}"></script>
+{% endblock %}

@@ -1,6 +1,6 @@
 import { Util } from './util.js'
-import { Ajax, RequestData } from './ajax.js'
-
+import { Ajax } from './ajax.js'
+import {RequestData} from './request.js'
 
 class AbstractModal {
   constructor(id) {

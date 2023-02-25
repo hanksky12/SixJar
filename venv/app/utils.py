@@ -48,10 +48,10 @@ class ResponseTool:
 
 class DecoratorTool:
     @staticmethod
-    def integrate(tags_list, request_schema, response_schema):
+    def integrate(tags_list, request_schema, response_schema, method='other'):
         def outer_wrapper(f):
             @doc(tags=tags_list)
-            @use_kwargs(request_schema, location='json')  # 需求的篩選與驗證 失敗就不會進到期下路由
+            @use_kwargs(request_schema, location=("querystring" if method == "GET" else 'json'))  # 需求的篩選與驗證 失敗就不會進到期下路由
             @marshal_with(SchemaTool.return_response_schema(response_schema))
             def wrapper(*args, **kwargs):
                 return f(*args, **kwargs)
@@ -61,9 +61,9 @@ class DecoratorTool:
         return outer_wrapper
 
     @staticmethod
-    def integrate_repeat(tags_list, schema):
+    def integrate_repeat(tags_list, schema, method='other'):
         def outer_wrapper(f):
-            @DecoratorTool.integrate(tags_list, schema, schema)
+            @DecoratorTool.integrate(tags_list, schema, schema, method)
             def wrapper(*args, **kwargs):
                 return f(*args, **kwargs)
 
@@ -79,7 +79,9 @@ class DecoratorTool:
                 if current_user.id != kwargs["user_id"]:
                     return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
                 return f(*args, **kwargs)
+
             return wrapper
+
         return outer_wrapper
 
 
@@ -97,11 +99,9 @@ class SchemaTool:
         return Schema.from_dict({
             "code": fields.Int(),
             "message": fields.Str(),
-            "total":fields.Int(),
+            "total": fields.Int(),
             "data": fields.List(fields.Nested(otherschema))
         })
-
-
 
 
 class CustomizeError(Exception):

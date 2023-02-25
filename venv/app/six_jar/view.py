@@ -87,3 +87,9 @@ def savings():
 @login_required
 def income_and_expense_table():
     return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names())
+
+
+@six_jar_bp.route("/income-and-expense-chart", methods=["GET"])
+@login_required
+def income_and_expense_chart():
+    return render_template("six_jar/income_and_expense_chart.html", jar_name=Jars.names())

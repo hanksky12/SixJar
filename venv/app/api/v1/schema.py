@@ -19,6 +19,10 @@ class EmptySchema(Schema):
     pass
 
 
+class ChartSchema(Schema):
+    chart = fields.Str(required=True)
+
+
 class EmailSchema(Schema):
     email = fields.Str(required=True, validate=validate.Length(1, 50, error='信箱長度請於1-50字'))
 
@@ -71,7 +75,7 @@ class IncomeAndExpenseSchema():
     remark = fields.Str(validate=validate.Length(max=50, error='請介於0~50字'))
 
 
-class RequestIncomeAndExpenseSchema(IncomeAndExpenseSchema,UserIdSchema):
+class RequestIncomeAndExpenseSchema(IncomeAndExpenseSchema, UserIdSchema):
     pass
 
 
@@ -79,12 +83,8 @@ class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, IncomeAndExpenseS
     pass
 
 
-class QueryIncomeAndExpenseSchema(Schema):
-    user_id = fields.Int(required=True)
-    limit = fields.Int(required=True, validate=validate.Range(min=1))
-    page = fields.Int(required=True, validate=validate.Range(min=1))
+class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
     sortOrder = fields.Str(required=True, validate=validate.OneOf(["asc", "desc"]))
-    sort = fields.Str(validate=validate.OneOf(["date", "money", "jar_name"]))
     income_and_expense = fields.Str(validate=validate.OneOf(["income", "expense"]))
     jar_name = fields.Str(validate=validate.OneOf(Jars.names()))
     minimum_money = fields.Int(validate=validate.Range(min=1))
@@ -92,6 +92,15 @@ class QueryIncomeAndExpenseSchema(Schema):
     earliest_date = fields.DateTime(format='%Y-%m-%d')
     latest_date = fields.DateTime(format='%Y-%m-%d')
 
+
+class QueryListIncomeAndExpenseSchema(QueryConditionIncomeAndExpenseSchema):
+    limit = fields.Int(required=True, validate=validate.Range(min=1))
+    page = fields.Int(required=True, validate=validate.Range(min=1))
+    sort = fields.Str(validate=validate.OneOf(["date", "money", "jar_name"]))
+
+
+class QueryChartIncomeAndExpenseSchema(QueryConditionIncomeAndExpenseSchema):
+    chart_type = fields.Str(validate=validate.OneOf(["圓餅", "長條", "折線", "直方", "散佈"]))
 
 
 class DeleteResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, UserIdSchema):

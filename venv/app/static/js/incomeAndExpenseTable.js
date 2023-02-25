@@ -1,10 +1,11 @@
 import { Util } from './util.js'
-import { Ajax, RequestData } from './ajax.js'
+import { Ajax } from './ajax.js'
+import {RequestData} from './request.js'
 
 export class IncomeAndExpenseTable{
     constructor(constantObject){
         this.constantObject=constantObject
-        this.url = constantObject.url+"/income-and-expense/search"
+        this.url = constantObject.url+"/income-and-expense/search/list"
         this.table = $('#table')
         this.table
         .bootstrapTable('destroy')
@@ -118,39 +119,17 @@ export class IncomeAndExpenseTable{
       let that = this
       $('#search_btn').click(()=> {
         Util.removeAlert()
-        if (that.#checkCondition())
+        if (Util.checkConditionValue())
             {that.table.bootstrapTable('refresh', {pageNumber :1})}
         else{Util.addAlert("搜尋條件,怪怪的喔！", 'danger')}
         }
         )
     }
-
-    #checkCondition(){
-        let earliest_date = document.getElementById('earliest_date').value 
-        let latest_date = document.getElementById('latest_date').value 
-        let minimum_money = parseInt(document.getElementById('minimum_money').value )
-        let maximum_money = parseInt(document.getElementById('maximum_money').value )
-        if ((earliest_date && latest_date)&& (earliest_date >= latest_date)){return false}
-        if ((minimum_money && maximum_money) && (minimum_money >= maximum_money)){return false}
-        return true
-    }
-  
     cleanSearchEvent(){
       Util.removeAlert()
       $('#clean_search_btn').click(
         ()=> {
-            let idArray = [
-              'selectTypeForSearch',
-              'selectJarForSearch',
-              'minimum_money',
-              'maximum_money',
-              'earliest_date',
-              'latest_date'
-              ]
-            $.each(idArray, function (index, id) {
-              document.getElementById(id).value = ""
-            }
-          )
+          Util.cleanConditionValue()
         }
       )
     }
@@ -201,10 +180,7 @@ export class IncomeAndExpenseTable{
         user_id:this.constantObject.userId
       }
       if (params.sort){temp["sort"] = params.sort} //如果有點擊欄位，就會抓到欄位名稱
-      if ($('#selectTypeForSearch').val()){temp["income_and_expense"] = $('#selectTypeForSearch').val()=="收入"?"income":"expense"}
-      if ($('#selectJarForSearch').val()){temp["jar_name"] = $('#selectJarForSearch').val()}
-      let idArray = ['minimum_money','maximum_money',"earliest_date","latest_date"]
-      for (let id of idArray) { if ($("#"+id).val()){temp[id] = $("#"+id).val()}}
+      temp = Util.getConditionValue(temp)
       return temp
     }
   

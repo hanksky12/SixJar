@@ -1,12 +1,22 @@
 import math
 import copy
 from sqlalchemy import text, desc
-
+import plotly.express as px
+import pandas as pd
+from dataclasses import dataclass
 
 from .model import IncomeAndExpense, Savings, Jar, Jars
 from .. import db
 from ..utils import CustomizeError
 
+
+@dataclass
+class DataColumn:
+    income_and_expense: str = '收入或支出'
+    money: str = '金額'
+    jar_name: str = '帳戶'
+    date: str = '日期'
+    remark: str = '備註'
 
 
 class IncomeAndExpenseControl:
@@ -17,12 +27,72 @@ class IncomeAndExpenseControl:
         self.__distribution_money_list = None
         self.__income_and_expense_id = None
 
-    def query(self) -> object:
-        order_by = self.__create_order_by()
-        filter = self.__create_filter()
-        income_and_expense_object = self.__query(filter, order_by)
+    def query_chart(self):
+        income_and_expense_object = self.__query_income_and_expense_object()
+        df_records = self.__object_to_df(income_and_expense_object)
+        df_records = self.__organize_data(df_records)
+        chart_json = self.__create_chart(df_records)
+        return chart_json
+
+    def __object_to_df(self, income_and_expense_object):
+        df_records = pd.DataFrame.from_records(income_and_expense_object.all(),
+                                               columns=['object',
+                                                        'id',
+                                                        'income_and_expense',
+                                                        'money',
+                                                        'date',
+                                                        'remark',
+                                                        'jar_name'])
+        return df_records
+
+    def __create_chart(self, df_records):
+        if self.__kwargs['chart_type'] == "直方":
+            fig = px.histogram(df_records,
+                               x=DataColumn.money,
+                               color=DataColumn.income_and_expense)
+        elif self.__kwargs['chart_type'] == "長條":
+            fig = px.bar(df_records,
+                         x=DataColumn.jar_name,
+                         y=DataColumn.money,
+                         color=DataColumn.income_and_expense)
+        elif self.__kwargs['chart_type'] == "圓餅":
+            fig = px.pie(df_records,
+                         values=DataColumn.money,
+                         names=DataColumn.jar_name)
+        elif self.__kwargs['chart_type'] == "折線":
+            fig = px.line(df_records,
+                          x=DataColumn.date,
+                          y=DataColumn.money,
+                          color=DataColumn.jar_name)
+        elif self.__kwargs['chart_type'] == "散佈":
+            fig = px.scatter(df_records,
+                             x=DataColumn.jar_name,
+                             y=DataColumn.money,
+                             size=DataColumn.money,
+                             color=DataColumn.income_and_expense)
+        return fig.to_json()
+
+    def __organize_data(self, df_records):
+        df_records = df_records.drop(["object", 'id','remark'], axis=1)
+        df_records['income_and_expense'] = df_records['income_and_expense'].apply(
+            lambda x: '收入' if x == "income" else "支出")
+        df_records.rename(columns={'income_and_expense': DataColumn.income_and_expense,
+                                   'money': DataColumn.money,
+                                   'date': DataColumn.date,
+                                   'remark': DataColumn.remark,
+                                   'jar_name': DataColumn.jar_name
+                                   }, inplace=True)
+        return df_records
+
+    def query_list(self) -> object:
+        income_and_expense_object = self.__query_income_and_expense_object()
         page_objs = self.__make_pagination(income_and_expense_object)
         return [row._mapping for row in page_objs.items], page_objs.total
+
+    def __query_income_and_expense_object(self):
+        order_by = self.__create_order_by()
+        filter = self.__create_filter()
+        return self.__query(filter, order_by)
 
     def __create_order_by(self):
         if self.__kwargs.get("sort") == "money":
@@ -202,7 +272,6 @@ class IncomeAndExpenseControl:
         income_and_expense.jar_id = self.__return_jar_id()
         return income_and_expense
 
-
     def __give_sign(self, income_and_expense, reverse=False):
         if reverse:
             return -1 if income_and_expense == "income" else 1
@@ -211,7 +280,6 @@ class IncomeAndExpenseControl:
 
     def __return_jar_id(self):
         return Jars.names().index(self.__kwargs["jar_name"]) + 1
-
 
     def init_savings(self):
         if Savings.query.filter_by(user_id=self.__kwargs["user_id"]).first() is None:
@@ -241,8 +309,3 @@ class IncomeAndExpenseControl:
     @property
     def response_data(self):
         return self.__response_data
-
-
-
-
-

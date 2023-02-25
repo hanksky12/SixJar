@@ -42,6 +42,43 @@ export class Util {
     }
     return "";
   }
+
+
+  static getConditionValue(temp) {
+    if ($('#selectTypeForSearch').val()){temp["income_and_expense"] = $('#selectTypeForSearch').val()=="收入"?"income":"expense"}
+    if ($('#selectJarForSearch').val()){temp["jar_name"] = $('#selectJarForSearch').val()}
+    let idArray = ['minimum_money','maximum_money',"earliest_date","latest_date"]
+    for (let id of idArray) { if ($("#"+id).val()){temp[id] = $("#"+id).val()}}
+    return temp;
+  }
+
+  static checkConditionValue() {
+    let earliest_date = document.getElementById('earliest_date').value 
+    let latest_date = document.getElementById('latest_date').value 
+    let minimum_money = parseInt(document.getElementById('minimum_money').value )
+    let maximum_money = parseInt(document.getElementById('maximum_money').value )
+    if (minimum_money == 0){return false}
+    if ((earliest_date && latest_date)&& (earliest_date >= latest_date)){return false}
+    if ((minimum_money && maximum_money) && (minimum_money >= maximum_money)){return false}
+    return true
+  }
+
+  static cleanConditionValue() {
+      let idArray = [
+        'selectTypeForSearch',
+        'selectJarForSearch',
+        'minimum_money',
+        'maximum_money',
+        'earliest_date',
+        'latest_date'
+        ]
+      $.each(idArray, function (index, id) {
+        document.getElementById(id).value = ""
+      }
+    )
+  }
+
+
 }
 
 export class Constant {

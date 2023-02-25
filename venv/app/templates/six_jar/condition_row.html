@@ -1,0 +1,45 @@
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-1">
+          <label class="input-group-text" >類別:</label>
+          <select class="form-select" id="selectTypeForSearch" >
+            <option value="" selected>請選擇..</option>
+            <option value="收入">收入</option>
+            <option value="支出">支出</option>
+          </select>
+        </div>
+      </div>
+      <div class="col">
+        <div class="input-group mb-1">
+          <label class="input-group-text" >帳戶:</label>
+          <select class="form-select" id="selectJarForSearch" >
+            <option value="" selected>請選擇..</option>
+            {% for jar in jar_name %}
+              <option value={{ jar }}>{{ jar }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-1">
+          <label class="input-group-text" >金額:</label>
+          <label class="input-group-text" >最小</label>
+          <input type="number" class="form-control" id="minimum_money" min=1/>
+          <label class="input-group-text" >最大</label>
+          <input type="number" class="form-control" id="maximum_money" min=1/>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-1">
+          <label class="input-group-text" >日期:</label>
+          <label class="input-group-text" >最早</label>
+          <input type="date" class="form-control" id="earliest_date" name="date" min="1900-01-01"  >
+          <label class="input-group-text" >最晚</label>
+          <input type="date" class="form-control" id="latest_date" name="date" min="1900-01-01">
+        </div>
+      </div>
+    </div>

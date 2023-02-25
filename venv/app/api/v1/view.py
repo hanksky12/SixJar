@@ -21,27 +21,43 @@ from .schema import \
     UserInfoSchema, \
     ResponseIncomeAndExpenseSchema, \
     DeleteResponseIncomeAndExpenseSchema, \
-    QueryIncomeAndExpenseSchema, \
-    RequestIncomeAndExpenseSchema
+    QueryListIncomeAndExpenseSchema, \
+    QueryChartIncomeAndExpenseSchema, \
+    RequestIncomeAndExpenseSchema,\
+    ChartSchema
+
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return User.query.filter_by(id=identity).one_or_none()
 
+
 @jwt.needs_fresh_token_loader
 def token_not_fresh_callback(jwt_header, jwt_payload):
     return ResponseTool.params_error(message=f"重要操作，請輸入密碼")
 
-class IncomeAndExpenseSearchApi(MethodResource):
+
+class IncomeAndExpenseSearchListApi(MethodResource):
     @doc(tags=["IncomeAndExpense💰"])
-    @use_kwargs(QueryIncomeAndExpenseSchema(), location='querystring')
+    @use_kwargs(QueryListIncomeAndExpenseSchema(), location='querystring')
     @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
     @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
-        income_and_expense_list, total = control.query()
+        income_and_expense_list, total = control.query_list()
         return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
+
+
+class IncomeAndExpenseSearchChartApi(MethodResource):
+    tags_list = ["IncomeAndExpense💰"]
+
+    @DecoratorTool.integrate(tags_list, QueryChartIncomeAndExpenseSchema, ChartSchema, method="GET")
+    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    def get(self, **kwargs):
+        control = IncomeAndExpenseControl(**kwargs)
+        income_and_expense_chart = control.query_chart()
+        return {"code": "200", "message": "查詢成功", "data": {"chart": income_and_expense_chart}}
 
 
 class IncomeAndExpensePostApi(MethodResource):
@@ -58,7 +74,7 @@ class IncomeAndExpensePostApi(MethodResource):
 class IncomeAndExpenseApi(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
 
-    @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema)
+    @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema, method="GET")
     @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
@@ -105,7 +121,7 @@ class UserLoginApi(MethodResource):
 
 
 class UserLogoutApi(MethodResource):
-    @DecoratorTool.integrate_repeat(["Token"], EmptySchema)
+    @DecoratorTool.integrate_repeat(["Token"], EmptySchema, method="GET")
     def get(self, **kwargs):
         resp = make_response(ResponseTool.success(message="登出成功", data=kwargs))
         control = UserControl()
@@ -128,7 +144,7 @@ class UserPostApi(MethodResource):
 class UserApi(MethodResource):
     tags_list = ["User😀"]
 
-    @DecoratorTool.integrate(tags_list, EmptySchema, UserInfoSchema)
+    @DecoratorTool.integrate(tags_list, UserIdSchema, UserInfoSchema, method='GET')
     @DecoratorTool.verify_user_id_and_jwt_cookie()
     def get(self, user_id, **kwargs):  # 傳給 verify_user_id_and_jwt_cookie
         return ResponseTool.success(message="查詢成功", data={"email": current_user.email,
@@ -179,7 +195,8 @@ api_dict = {
     "/users/logout": UserLogoutApi,
     "/token/refresh": TokenRefreshApi,
     "/income-and-expense": IncomeAndExpensePostApi,
-    "/income-and-expense/search": IncomeAndExpenseSearchApi,
+    "/income-and-expense/search/list": IncomeAndExpenseSearchListApi,
+    "/income-and-expense/search/chart": IncomeAndExpenseSearchChartApi,
     "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
 }
 
