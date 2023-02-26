@@ -1,38 +1,36 @@
 import { Util } from './util.js'
 import { Ajax } from './ajax.js'
-import {RequestData} from './request.js'
+import {UserRequest, UserLoginRequest, JarRequest, RefreshTokenRequest} from './request.js'
+import { AbstractForm, AbstractModal } from './abstract.js'
 
-class AbstractModal {
-  constructor(id) {
-    this.modal = document.getElementById(id)
-    this.bootstrapModal = new bootstrap.Modal(this.modal, { keyboard: false})
-  }
-  hide(){
-    this.bootstrapModal.hide()
-}
-  show(){
-    this.bootstrapModal.show()
-  }
-}
 
-class AbstractForm{
-  constructor(id) {
-    this.form = document.getElementById(id)
-  }
 
-  autoBootstrapValid(event) {
-    if (!this.form.checkValidity()) {
-      console.log("基礎驗證未通過")
-      this.form.classList.add('was-validated')
-      return false
+export  class CurrentRow {
+  #array
+  getInfo(button, method, today) {
+      if (method == "新增"){
+        this.#array = ["0", "", "", today, 0, ""]}
+      else{
+        this.#array = []
+        this.takeCurrentRowDataToArray(button)
+        this.id = this.#array[0];
+        this.income_and_expense = this.#array[1];
+        this.jar_name = this.#array[2];
+        this.date = this.#array[3];
+        this.money = this.#array[4];
+        this.remark = this.#array[5];
     }
-    else {
-      console.log("基礎驗證通過")
-      this.form.classList.add('was-validated')
-      return true
+  }
+
+  takeCurrentRowDataToArray(button) {
+      let currentRowchildNodes = button.parentNode.parentNode.childNodes
+      for (let childNodes of currentRowchildNodes) {
+      if (childNodes.nodeType === 1) {
+          this.#array.push(childNodes.textContent)
+        }
+      }
     }
-}
-}
+  }
 
 class PasswordModal extends AbstractModal {
   constructor() {
@@ -93,32 +91,7 @@ export class JarModal extends AbstractModal {
     }
   }
   
-export  class CurrentRow {
-    #array
-    getInfo(button, method, today) {
-        if (method == "新增"){
-          this.#array = ["0", "", "", today, 0, ""]}
-        else{
-          this.#array = []
-          this.takeCurrentRowDataToArray(button)
-          this.id = this.#array[0];
-          this.income_and_expense = this.#array[1];
-          this.jar_name = this.#array[2];
-          this.date = this.#array[3];
-          this.money = this.#array[4];
-          this.remark = this.#array[5];
-      }
-    }
 
-    takeCurrentRowDataToArray(button) {
-        let currentRowchildNodes = button.parentNode.parentNode.childNodes
-        for (let childNodes of currentRowchildNodes) {
-        if (childNodes.nodeType === 1) {
-            this.#array.push(childNodes.textContent)
-          }
-        }
-      }
-    }
   
 export  class JarForm extends AbstractForm{
     constructor() {
@@ -134,7 +107,7 @@ export  class JarForm extends AbstractForm{
     }
 
 
-    async clickForm(event,constantObject,currentRowObject,jarModalObject,incomeAndExpenseTableObject)
+    async click(event,constantObject,currentRowObject,jarModalObject,incomeAndExpenseTableObject)
     {
       this.#getValue()
       if (this.autoBootstrapValid(event)== false) return
@@ -173,10 +146,12 @@ export  class JarForm extends AbstractForm{
 
     async #sendRequestAndChangeDisplay(constantObject,currentRowObject,jarModalObject, incomeAndExpenseTableObject) {
       console.log("sendRequestAndChangeDisplay")
-      let requestObject = new RequestData(constantObject)
-      let jarRequest = requestObject.getJar(currentRowObject,jarModalObject, this)
-      let tokenRequest = requestObject.getRefreshToken()
-      let responseData = await Ajax.sendAutoRefresh(jarRequest, tokenRequest, constantObject.httpHeaders)
+      // let requestObject = new RequestData(constantObject)
+      let jarRequest = JarRequest.create(constantObject,currentRowObject,jarModalObject, this)
+      // let jarRequest = requestObject.getJar(currentRowObject,jarModalObject, this)
+      // let tokenRequest = RefreshTokenRequest.create(constantObject)
+      // let tokenRequest = requestObject.getRefreshToken()
+      let responseData = await Ajax.sendAutoRefresh(jarRequest,constantObject)
       incomeAndExpenseTableObject.changeDisplayRecord(jarModalObject, currentRowObject, responseData.data)
       let type = responseData.is_success?'primary' :'danger'
       Util.addAlert(responseData.message, type)
@@ -218,13 +193,16 @@ class PasswordForm extends AbstractForm{
 
   async #sendRequest(constantObject) {
     console.log("送出使用者密碼驗證")
-    let requestObject = new RequestData(constantObject)
-    let userRequest = requestObject.getUser()
-    let tokenRequest = requestObject.getRefreshToken()
-    let userResponse = await Ajax.sendAutoRefresh(userRequest, tokenRequest, constantObject.httpHeaders)
+    // let requestObject = new RequestData(constantObject)
+    // let userRequest = requestObject.getUser()
+    let userRequest = UserRequest.create(constantObject)
+    // let tokenRequest = RefreshTokenRequest.create(constantObject)
+    // let tokenRequest = requestObject.getRefreshToken()
+    let userResponse = await Ajax.sendAutoRefresh(userRequest,  constantObject)
     let password = document.getElementById('inputPassword').value
-    let userLoginRequest = requestObject.getUserLogin(userResponse.data.email, password)
-    let userLoginResponse = await Ajax.sendAutoRefresh(userLoginRequest, tokenRequest, constantObject.httpHeaders)
+    // let userLoginRequest = requestObject.getUserLogin(userResponse.data.email, password)
+    let userLoginRequest = UserLoginRequest.create(constantObject,userResponse.data.email, password)
+    let userLoginResponse = await Ajax.sendAutoRefresh(userLoginRequest, constantObject)
     if (userLoginResponse.is_success){return true}
     console.log("密碼錯誤")
     return false

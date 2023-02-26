@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, ValidationError, IntegerField, BooleanField
-from wtforms.validators import DataRequired
-from wtforms import validators
+from wtforms import \
+    StringField, PasswordField, SubmitField, ValidationError, IntegerField, BooleanField, validators
 from wtforms.fields import EmailField
 import email_validator
 
@@ -10,26 +9,26 @@ from .model import User
 
 class EmailForm(FlaskForm):
     email = EmailField('Email', validators=[
-        DataRequired(),
+        validators.DataRequired(),
         validators.Length(1, 50),
         validators.Email(message="無效信箱")
     ])
 
 
 class NameForm(FlaskForm):
-    name = StringField('姓名', validators=[DataRequired()])
+    name = StringField('姓名', validators=[validators.DataRequired()])
 
 
 class PasswordForm(FlaskForm):
     password = PasswordField('密碼', validators=[
-        DataRequired(),
+        validators.DataRequired(),
         validators.Length(2, 10)
     ])
 
 
 class UserInfoForm(NameForm, PasswordForm):
     password2 = PasswordField('重複密碼', validators=[
-        DataRequired(),
+        validators.DataRequired(),
         validators.EqualTo('password', '輸入的兩次密碼不相等')])
     submit = SubmitField('修改')
 

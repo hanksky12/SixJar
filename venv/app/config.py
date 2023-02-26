@@ -20,7 +20,7 @@ class BaseConfig:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_ACCESS_COOKIE_PATH = '/'  # 只有在這個網址下 才送出jwt cookie  後面加什麼不重要/api/dsfdsdffd
     JWT_REFRESH_COOKIE_PATH = '/api/v1/token/refresh'  # 只有在這個網址下 才送出jwt refresh cookie
-    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=2)  # 過期時間
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=30)  # 過期時間
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)  # 過期時間
 
     APISPEC_SPEC = APISpec(

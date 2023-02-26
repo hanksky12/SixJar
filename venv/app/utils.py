@@ -1,13 +1,14 @@
 from marshmallow import Schema, fields
 from flask import flash
+from flask_apispec import use_kwargs, marshal_with, doc
 from flask_jwt_extended import \
     create_access_token, \
     create_refresh_token, \
     set_access_cookies, \
     set_refresh_cookies, \
-    unset_jwt_cookies
-from flask_apispec import use_kwargs, marshal_with, doc
-from flask_jwt_extended import jwt_required, current_user
+    unset_jwt_cookies,\
+    jwt_required, \
+    current_user
 
 
 def flash_form_error(form):
@@ -48,35 +49,32 @@ class ResponseTool:
 
 class DecoratorTool:
     @staticmethod
-    def integrate(tags_list, request_schema, response_schema, method='other'):
+    def integrate(tags_list,
+                  request_schema,
+                  response_schema,
+                  return_list=False,
+                  fresh=False,
+                  refresh=False,
+                  verify_user=True,
+                  method='other'
+                  ):
+        """
+        tags_list:  apidoc tag
+        request_schema: check input condition
+        response_schema: filter output condition
+        method: input arg location
+        fresh: check jwt_token is fresh
+        refresh: check jwt_refresh_token in request
+        verify_user: check user_id in (body or query)  is equal to jwt_token or not
+        """
+
         def outer_wrapper(f):
             @doc(tags=tags_list)
             @use_kwargs(request_schema, location=("querystring" if method == "GET" else 'json'))  # 需求的篩選與驗證 失敗就不會進到期下路由
-            @marshal_with(SchemaTool.return_response_schema(response_schema))
+            @marshal_with(SchemaTool.return_response_schema(response_schema, return_list))
+            @jwt_required(fresh=fresh, refresh=refresh)
             def wrapper(*args, **kwargs):
-                return f(*args, **kwargs)
-
-            return wrapper
-
-        return outer_wrapper
-
-    @staticmethod
-    def integrate_repeat(tags_list, schema, method='other'):
-        def outer_wrapper(f):
-            @DecoratorTool.integrate(tags_list, schema, schema, method)
-            def wrapper(*args, **kwargs):
-                return f(*args, **kwargs)
-
-            return wrapper
-
-        return outer_wrapper
-
-    @staticmethod
-    def verify_user_id_and_jwt_cookie(fresh=False):
-        def outer_wrapper(f):
-            @jwt_required(fresh=fresh)
-            def wrapper(*args, **kwargs):
-                if current_user.id != kwargs["user_id"]:
+                if verify_user and current_user.id != kwargs["user_id"]:
                     return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
                 return f(*args, **kwargs)
 
@@ -87,20 +85,15 @@ class DecoratorTool:
 
 class SchemaTool:
     @staticmethod
-    def return_response_schema(otherschema):
-        return Schema.from_dict({
-            "code": fields.Int(),
-            "message": fields.Str(),
-            "data": fields.Nested(otherschema)
-        })
-
-    @staticmethod
-    def return_response_schema_list(otherschema):
+    def return_response_schema(schema, return_list=False):
+        """
+        return_list:  return schema is list or not
+        """
         return Schema.from_dict({
             "code": fields.Int(),
             "message": fields.Str(),
             "total": fields.Int(),
-            "data": fields.List(fields.Nested(otherschema))
+            "data": fields.List(fields.Nested(schema)) if return_list else fields.Nested(schema)
         })
 
 

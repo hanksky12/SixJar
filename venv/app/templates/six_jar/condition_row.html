@@ -1,3 +1,5 @@
+
+
     <div class="row">
       <div class="col">
         <div class="input-group mb-1">
@@ -26,9 +28,9 @@
         <div class="input-group mb-1">
           <label class="input-group-text" >金額:</label>
           <label class="input-group-text" >最小</label>
-          <input type="number" class="form-control" id="minimum_money" min=1/>
+          <input type="number" class="form-control" id="minimum_money" min=1 value=1 />
           <label class="input-group-text" >最大</label>
-          <input type="number" class="form-control" id="maximum_money" min=1/>
+          <input type="number" class="form-control" id="maximum_money" min=1 value=9999 />
         </div>
       </div>
     </div>
@@ -37,9 +39,9 @@
         <div class="input-group mb-1">
           <label class="input-group-text" >日期:</label>
           <label class="input-group-text" >最早</label>
-          <input type="date" class="form-control" id="earliest_date" name="date" min="1900-01-01"  >
+          <input type="date" class="form-control" id="earliest_date" name="date" min="1911-01-01"  value='2000-01-01'>
           <label class="input-group-text" >最晚</label>
-          <input type="date" class="form-control" id="latest_date" name="date" min="1900-01-01">
+          <input type="date" class="form-control" id="latest_date" name="date" min="1900-01-01" value={{ today }}>
         </div>
       </div>
     </div>

@@ -20,17 +20,3 @@ def list_routes():
     with app.app_context(), app.test_request_context():
         for rule in app.url_map.iter_rules():
             print(f"{rule.endpoint} {rule.methods} {rule.arguments}")
-            # output = []
-            # import urllib
-            # options = {}
-            # for arg in rule.arguments:
-            #     options[arg] = "[{0}]".format(arg)
-        #
-        #     methods = ','.join(rule.methods)
-        #     url = url_for(rule.endpoint, **options)
-        #     # line = urllib.unquote("{:50s} {:20s} {}".format(rule.endpoint, methods, url))
-        #     line = rule.endpoint + methods + url
-        #     output.append(line)
-        #
-        # for line in sorted(output):
-        #     print(line)

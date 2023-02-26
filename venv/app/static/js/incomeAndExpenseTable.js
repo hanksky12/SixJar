@@ -1,11 +1,11 @@
 import { Util } from './util.js'
 import { Ajax } from './ajax.js'
-import {RequestData} from './request.js'
+import {RefreshTokenRequest} from './request.js'
 
 export class IncomeAndExpenseTable{
     constructor(constantObject){
         this.constantObject=constantObject
-        this.url = constantObject.url+"/income-and-expense/search/list"
+        this.url = constantObject.url+"/income-and-expense/list"
         this.table = $('#table')
         this.table
         .bootstrapTable('destroy')
@@ -115,24 +115,29 @@ export class IncomeAndExpenseTable{
       })
     }
 
-    searchEvent(){
-      let that = this
-      $('#search_btn').click(()=> {
-        Util.removeAlert()
-        if (Util.checkConditionValue())
-            {that.table.bootstrapTable('refresh', {pageNumber :1})}
-        else{Util.addAlert("搜尋條件,怪怪的喔！", 'danger')}
-        }
-        )
+
+    execute(){
+      this.table.bootstrapTable('refresh', {pageNumber :1})
     }
-    cleanSearchEvent(){
-      Util.removeAlert()
-      $('#clean_search_btn').click(
-        ()=> {
-          Util.cleanConditionValue()
-        }
-      )
-    }
+
+    // searchEvent(){
+    //   let that = this
+    //   $('#search_btn').click(()=> {
+    //     Util.removeAlert()
+    //     if (Util.checkConditionValue())
+    //         {that.table.bootstrapTable('refresh', {pageNumber :1})}
+    //     else{Util.addAlert("搜尋條件,怪怪的喔！", 'danger')}
+    //     }
+    //     )
+    // }
+    // cleanSearchEvent(){
+    //   Util.removeAlert()
+    //   $('#clean_search_btn').click(
+    //     ()=> {
+    //       Util.cleanConditionValue()
+    //     }
+    //   )
+    // }
   
     changeDisplayRecord(jarModalObject, currentRowObject, responseData){
       if (jarModalObject.method == "刪除"){
@@ -196,11 +201,13 @@ export class IncomeAndExpenseTable{
   }
 
   async #refreshToken(){
-    let requestObject = new RequestData(this.constantObject)
-    let tokenRequest = requestObject.getRefreshToken()
+    // let requestObject = new RequestData(this.constantObject)
+    let tokenRequest = RefreshTokenRequest.create(constantObject)
+    // let tokenRequest = requestObject.getRefreshToken()
     await Ajax.send(tokenRequest)
     await this.table.bootstrapTable('refresh');
 }
 }
   
   
+

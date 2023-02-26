@@ -3,11 +3,11 @@ from flask_jwt_extended import unset_jwt_cookies, jwt_required, get_jwt_identity
 from flask_login import login_user, current_user, login_required, logout_user
 
 from . import user_bp
+from .. import db, jwt, login_manager
 from .form import LoginForm, RegisterForm, UserInfoForm
 from .control import UserControl
-from ..utils import flash_form_error, JwtTool,CustomizeError
+from ..utils import flash_form_error, JwtTool, CustomizeError
 from .model import User
-from .. import db, jwt, login_manager
 
 
 @user_bp.route("/login2", methods=["POST", "GET"])
@@ -29,7 +29,6 @@ def login3():
     )
     flash("登入成功", category='info')
     return resp
-
 
 
 @user_bp.route("/register", methods=["POST", "GET"])

@@ -1,5 +1,7 @@
 import math
 import copy
+import random
+import datetime
 from sqlalchemy import text, desc
 import plotly.express as px
 import pandas as pd
@@ -19,6 +21,7 @@ class DataColumn:
     remark: str = '備註'
 
 
+# saving, query, crud
 class IncomeAndExpenseControl:
     def __init__(self, **kwargs):
         self.__kwargs = kwargs
@@ -73,7 +76,7 @@ class IncomeAndExpenseControl:
         return fig.to_json()
 
     def __organize_data(self, df_records):
-        df_records = df_records.drop(["object", 'id','remark'], axis=1)
+        df_records = df_records.drop(["object", 'id', 'remark'], axis=1)
         df_records['income_and_expense'] = df_records['income_and_expense'].apply(
             lambda x: '收入' if x == "income" else "支出")
         df_records.rename(columns={'income_and_expense': DataColumn.income_and_expense,
@@ -103,7 +106,7 @@ class IncomeAndExpenseControl:
             order_by = Jar.name
         else:
             order_by = IncomeAndExpense.date
-        if self.__kwargs['sortOrder'] == "desc":
+        if self.__kwargs.get('sortOrder') == "desc":
             order_by = desc(order_by)
         return order_by
 
@@ -187,11 +190,56 @@ class IncomeAndExpenseControl:
             raise CustomizeError.no_record_find()
 
     def insert(self):
+        income_and_expense, savings = self.__insert()
+        self.__saving = savings.savings
+        self.__response_data["id"] = income_and_expense.id
+
+    def __insert(self):
         with db.auto_commit():
             savings, income_and_expense = self.__add_record()
             db.session.add_all([savings, income_and_expense])
-        self.__saving = savings.savings
-        self.__response_data["id"] = income_and_expense.id
+        return income_and_expense, savings
+
+    def insert_fake_data(self):
+        self.__kwargs['remark'] = '我是測試資料'
+        select_income_and_expense = self.__kwargs.get('income_and_expense')
+        select_jar_name = self.__kwargs.get('jar_name')
+        for number in range(self.__kwargs['number']):
+            self.__random_value(select_income_and_expense, select_jar_name)
+            self.__insert()
+
+    def __random_value(self, select_income_and_expense, select_jar_name):
+        self.__random_income_and_expense(select_income_and_expense)
+        self.__random_jar_name(select_jar_name)
+        self.__random_date()
+        self.__random_money()
+
+    def __random_income_and_expense(self, select_income_and_expense):
+        print("__random_income_and_expense")
+        if select_income_and_expense is None:
+            self.__kwargs['income_and_expense'] = random.choice(['income', 'expense'])
+        print(self.__kwargs['income_and_expense'])
+
+    def __random_jar_name(self, select_jar_name):
+        print("__random_jar_name")
+        if select_jar_name is None:
+            self.__kwargs['jar_name'] = random.choice(Jars.names())
+        print(self.__kwargs['jar_name'])
+
+    def __random_date(self):
+        print("__random_date")
+        print((datetime.datetime.now().date()))
+        print(self.__kwargs["earliest_date"])
+        print(self.__kwargs["latest_date"])
+        self.__kwargs['date'] = \
+            (random.random() * (self.__kwargs["latest_date"] - self.__kwargs["earliest_date"]) + self.__kwargs[
+                "earliest_date"])
+        print(self.__kwargs['date'])
+
+    def __random_money(self):
+        print("__random_money")
+        self.__kwargs['money'] = random.randint(self.__kwargs["minimum_money"], self.__kwargs["maximum_money"])
+        print(self.__kwargs['money'])
 
     def __add_record(self):
         self.__jar_id = self.__return_jar_id()

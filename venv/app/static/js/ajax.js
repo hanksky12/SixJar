@@ -1,6 +1,9 @@
 import {
   Util
 } from './util.js'
+import {
+  RefreshTokenRequest
+} from './request.js'
 
 class ResponseData {
   constructor(data, message, is_success = true) {
@@ -13,13 +16,14 @@ class ResponseData {
 
 
 export class Ajax {
-  static async sendAutoRefresh(request, tokenRequest, httpHeaders) {
+  static async sendAutoRefresh(request, constantObject) {
     let cloneRequest = request.clone() //fetch 目前禁止同一個request發兩次
+    let tokenRequest = RefreshTokenRequest.create(constantObject)
+    let httpHeaders = constantObject.httpHeaders
     let responseData
     try {
       responseData = await Ajax.send(request)
-    } 
-    catch (error) {
+    } catch (error) {
       console.log(error.message)
       if (error.message == "Token has expired") {
         await Ajax.send(tokenRequest)
@@ -39,8 +43,8 @@ export class Ajax {
     let responseData
     response = await fetch(request)
     jsonResponse = await response.json()
-    jsonResponse =  Ajax.processStatus(jsonResponse)
-    responseData =  Ajax.successHandling(jsonResponse)
+    jsonResponse = Ajax.processStatus(jsonResponse)
+    responseData = Ajax.successHandling(jsonResponse)
     return responseData
   }
 

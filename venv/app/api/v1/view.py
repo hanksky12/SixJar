@@ -1,16 +1,18 @@
 from marshmallow import Schema, fields
-from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
-from flask_jwt_extended import jwt_required, current_user, get_jwt_identity, create_access_token, set_access_cookies
+from werkzeug.exceptions import HTTPException
 from flask import make_response
 from flask_login import login_user
-from werkzeug.exceptions import HTTPException
+from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
+from flask_jwt_extended import \
+    jwt_required, current_user, get_jwt_identity, create_access_token, set_access_cookies
+
 
 from . import api_bp, api
+from ... import jwt, docs
 from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
 from ...user.control import UserControl
 from ...user.model import User
 from ...six_jar.control import IncomeAndExpenseControl
-from ... import jwt, docs
 from .schema import \
     EmptySchema, \
     UserRegisterSchema, \
@@ -23,8 +25,9 @@ from .schema import \
     DeleteResponseIncomeAndExpenseSchema, \
     QueryListIncomeAndExpenseSchema, \
     QueryChartIncomeAndExpenseSchema, \
-    RequestIncomeAndExpenseSchema,\
-    ChartSchema
+    RequestIncomeAndExpenseSchema, \
+    ChartSchema, \
+    FakeDataSchema
 
 
 @jwt.user_lookup_loader
@@ -38,77 +41,135 @@ def token_not_fresh_callback(jwt_header, jwt_payload):
     return ResponseTool.params_error(message=f"重要操作，請輸入密碼")
 
 
-class IncomeAndExpenseSearchListApi(MethodResource):
-    @doc(tags=["IncomeAndExpense💰"])
-    @use_kwargs(QueryListIncomeAndExpenseSchema(), location='querystring')
-    @marshal_with(SchemaTool.return_response_schema_list(ResponseIncomeAndExpenseSchema))
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+@api_bp.errorhandler(CustomizeError)
+def customize_error(e):
+    return ResponseTool.params_error(message=f"失敗,{e}")
+
+
+# @api_bp.app_errorhandler(Exception)
+# def handle_exception(e):
+#     # pass through HTTP errors
+#     if isinstance(e, HTTPException):
+#         return e
+#     print(e)
+#     return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
+
+
+class AbstractIncomeAndExpense(MethodResource):
+    tags_list = ["IncomeAndExpense💰"]
+    pass
+
+
+class AbstractToken(MethodResource):
+    tags_list = ["Token"]
+    pass
+
+
+class AbstractUser(MethodResource):
+    tags_list = ["User😀"]
+    pass
+
+
+class IncomeAndExpenseListApi(AbstractIncomeAndExpense):
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=QueryListIncomeAndExpenseSchema,
+        response_schema=ResponseIncomeAndExpenseSchema,
+        return_list=True,
+        method="GET")
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         income_and_expense_list, total = control.query_list()
         return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
 
 
-class IncomeAndExpenseSearchChartApi(MethodResource):
-    tags_list = ["IncomeAndExpense💰"]
+class IncomeAndExpenseChartApi(AbstractIncomeAndExpense):
 
-    @DecoratorTool.integrate(tags_list, QueryChartIncomeAndExpenseSchema, ChartSchema, method="GET")
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=QueryChartIncomeAndExpenseSchema,
+        response_schema=ChartSchema,
+        method="GET")
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
-        income_and_expense_chart = control.query_chart()
-        return {"code": "200", "message": "查詢成功", "data": {"chart": income_and_expense_chart}}
+        chart_json_str = control.query_chart()
+        return ResponseTool.success(message="查詢成功", data={"chart": chart_json_str})
 
 
-class IncomeAndExpensePostApi(MethodResource):
-    tags_list = ["IncomeAndExpense💰"]
+class IncomeAndExpensePostApi(AbstractIncomeAndExpense):
 
-    @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=RequestIncomeAndExpenseSchema,
+        response_schema=ResponseIncomeAndExpenseSchema)
     def post(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.insert()
-        return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
+        return ResponseTool.vresult(code=201, message="成功新增", data=control.response_data)
 
 
-# class IncomeAndExpensePostFakeApi(MethodResource):
-#     tags_list = ["IncomeAndExpense💰"]
-#
-#     # @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-#     # @DecoratorTool.verify_user_id_and_jwt_cookie()
-#     def post(self, **kwargs):
-#         control = IncomeAndExpenseControl(**kwargs)
-#         control.insert()
-#         return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
+class IncomeAndExpenseFakeApi(AbstractIncomeAndExpense):
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=FakeDataSchema,
+        response_schema=EmptySchema)
+    def post(self, **kwargs):
+        print(kwargs)
+        control = IncomeAndExpenseControl(**kwargs)
+        control.insert_fake_data()
+        return ResponseTool.result(code=201, message="成功新增")
+        #3.待測試fake_data api
+        #4.待完成刪除fake_data api
 
-class IncomeAndExpenseApi(MethodResource):
-    tags_list = ["IncomeAndExpense💰"]
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=UserIdSchema,
+        response_schema=EmptySchema)
+    def delete(self, **kwargs):#todo
+        control = IncomeAndExpenseControl(**kwargs)
+        control.delete_fake_data()
+        return ResponseTool.success(message="刪除成功")
 
-    @DecoratorTool.integrate(tags_list, UserIdSchema, ResponseIncomeAndExpenseSchema, method="GET")
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+
+class IncomeAndExpenseApi(AbstractIncomeAndExpense):
+
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=UserIdSchema,
+        response_schema=ResponseIncomeAndExpenseSchema,
+        method="GET")
     def get(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.read()
         return ResponseTool.success(message="查詢成功", data=control.response_data)
 
-    @DecoratorTool.integrate(tags_list, RequestIncomeAndExpenseSchema, ResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=RequestIncomeAndExpenseSchema,
+        response_schema=ResponseIncomeAndExpenseSchema)
     def put(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.update()
         return ResponseTool.success(message="更新成功", data=control.response_data)
 
-    @DecoratorTool.integrate(tags_list, UserIdSchema, DeleteResponseIncomeAndExpenseSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie(fresh=True)
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=UserIdSchema,
+        response_schema=DeleteResponseIncomeAndExpenseSchema,
+        fresh=True)
     def delete(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.delete()
         return ResponseTool.success(message="刪除成功", data=control.response_data)
 
 
-class TokenRefreshApi(MethodResource):
-    @DecoratorTool.integrate_repeat(["Token"], EmptySchema)
-    @jwt_required(refresh=True)
+class TokenRefreshApi(AbstractToken):
+    @DecoratorTool.integrate(
+        tags_list=AbstractToken.tags_list,
+        request_schema=EmptySchema,
+        response_schema=EmptySchema,
+        refresh=True,
+        verify_user=False)
     def post(self):
         user_id = get_jwt_identity()
         resp = make_response(ResponseTool.success(message="token 更新成功"), 302)
@@ -117,8 +178,11 @@ class TokenRefreshApi(MethodResource):
         return resp
 
 
-class UserLoginApi(MethodResource):
-    @DecoratorTool.integrate(["Token"], UserLoginSchema, UserIdSchema)
+class UserLoginApi(AbstractToken):
+
+    @doc(tags=AbstractToken.tags_list)
+    @use_kwargs(UserLoginSchema, location='json')
+    @marshal_with(SchemaTool.return_response_schema(UserIdSchema))
     def post(self, **kwargs):
         control = UserControl()
         resp = control.login(kwargs["email"],
@@ -130,8 +194,9 @@ class UserLoginApi(MethodResource):
         return resp
 
 
-class UserLogoutApi(MethodResource):
-    @DecoratorTool.integrate_repeat(["Token"], EmptySchema, method="GET")
+class UserLogoutApi(AbstractToken):
+
+    @doc(tags=AbstractToken.tags_list)
     def get(self, **kwargs):
         resp = make_response(ResponseTool.success(message="登出成功", data=kwargs))
         control = UserControl()
@@ -139,8 +204,11 @@ class UserLogoutApi(MethodResource):
         return resp
 
 
-class UserPostApi(MethodResource):
-    @DecoratorTool.integrate(["User😀"], UserRegisterSchema, UserIdSchema)
+class UserPostApi(AbstractUser):
+
+    @doc(tags=AbstractUser.tags_list)
+    @use_kwargs(UserRegisterSchema, location='json')
+    @marshal_with(SchemaTool.return_response_schema(UserIdSchema))
     def post(self, **kwargs):
         control = UserControl()
         control.register(
@@ -151,17 +219,23 @@ class UserPostApi(MethodResource):
         return ResponseTool.result(code=201, message="成功新增", data={"user_id": control.user_id})
 
 
-class UserApi(MethodResource):
-    tags_list = ["User😀"]
+class UserApi(AbstractUser):
 
-    @DecoratorTool.integrate(tags_list, EmptySchema, UserInfoSchema, method='GET')#本來網址就會帶user_id
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
-    def get(self, user_id, **kwargs):  # 傳給 verify_user_id_and_jwt_cookie
-        return ResponseTool.success(message="查詢成功", data={"email": current_user.email,
-                                                              "name": current_user.name})
+    @DecoratorTool.integrate(
+        tags_list=AbstractUser.tags_list,
+        request_schema=EmptySchema,
+        response_schema=UserInfoSchema,
+        method='GET')
+    def get(self, user_id, **kwargs):  # 本來網址就會帶user_id傳給 verify_user_id_and_jwt_cookie
+        return ResponseTool.success(message="查詢成功",
+                                    data={
+                                        "email": current_user.email,
+                                        "name": current_user.name})
 
-    @DecoratorTool.integrate_repeat(tags_list, UserPutSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    @DecoratorTool.integrate(
+        tags_list=AbstractUser.tags_list,
+        request_schema=UserPutSchema,
+        response_schema=UserPutSchema)
     def put(self, user_id, **kwargs):
         control = UserControl()
         is_success = control.change_info(
@@ -173,8 +247,10 @@ class UserApi(MethodResource):
         else:
             return ResponseTool.params_error(message="修改失敗", data=kwargs)
 
-    @DecoratorTool.integrate(tags_list, EmptySchema, UserIdSchema)
-    @DecoratorTool.verify_user_id_and_jwt_cookie()
+    @DecoratorTool.integrate(
+        tags_list=AbstractUser.tags_list,
+        request_schema=EmptySchema,
+        response_schema=UserIdSchema)
     def delete(self, user_id, **kwargs):
         control = UserControl()
         is_success = control.delete_info(user_id)
@@ -182,20 +258,6 @@ class UserApi(MethodResource):
             return ResponseTool.success(message="刪除成功", data={"user_id": user_id})
         else:
             return ResponseTool.params_error(message="刪除失敗", data=kwargs)
-
-
-@api_bp.errorhandler(CustomizeError)
-def customizeError(e):
-    return ResponseTool.params_error(message=f"失敗,{e}")
-
-
-@api_bp.app_errorhandler(Exception)
-def handle_exception(e):
-    # pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-    print(e)
-    return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 
 
 api_dict = {
@@ -206,9 +268,9 @@ api_dict = {
     "/token/refresh": TokenRefreshApi,
     "/income-and-expense": IncomeAndExpensePostApi,
     "/income-and-expense/<int:income_and_expense_id>": IncomeAndExpenseApi,
-    # "/income-and-expense/fake-data/<int:number>": IncomeAndExpensePostFakeApi,
-    "/income-and-expense/search/list": IncomeAndExpenseSearchListApi,
-    "/income-and-expense/search/chart": IncomeAndExpenseSearchChartApi,
+    "/income-and-expense/fake-data": IncomeAndExpenseFakeApi,
+    "/income-and-expense/list": IncomeAndExpenseListApi,
+    "/income-and-expense/chart": IncomeAndExpenseChartApi,
 }
 
 for route, api_resource in api_dict.items():

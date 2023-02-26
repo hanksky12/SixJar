@@ -1,5 +1,5 @@
 from flask import render_template, flash, request, redirect, url_for, flash
-import datetime
+from datetime import datetime
 from flask_login import login_user, current_user, login_required
 
 from .form import AutomaticDistributionIncomeForm, ManuallyDistributeIncomeForm, ManuallyDistributeExpenseForm
@@ -86,10 +86,14 @@ def savings():
 @six_jar_bp.route("/income-and-expense-table", methods=["GET"])
 @login_required
 def income_and_expense_table():
-    return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names())
-
+    return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names(),today=datetime.now())
 
 @six_jar_bp.route("/income-and-expense-chart", methods=["GET"])
 @login_required
 def income_and_expense_chart():
-    return render_template("six_jar/income_and_expense_chart.html", jar_name=Jars.names())
+    return render_template("six_jar/income_and_expense_chart.html", jar_name=Jars.names(),today=datetime.now())
+
+@six_jar_bp.route("/income-and-expense-fake-data", methods=["GET"])
+@login_required
+def income_and_expense_fake_data():
+    return render_template("six_jar/income_and_expense_fake_data.html", jar_name=Jars.names(),today=datetime.now())

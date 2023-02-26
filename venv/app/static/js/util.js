@@ -1,3 +1,4 @@
+import { AbstractForm } from './abstract.js'
 export class Util {
   static getTodayDate() {
     let fullDate = new Date();
@@ -78,6 +79,20 @@ export class Util {
     )
   }
 
+  static createRequest(url, method, httpHeaders, body) {
+    if (body == undefined) {
+      return new Request(url, {
+        method: method,
+        headers: new Headers(httpHeaders)
+      })
+    } else {
+      return new Request(url, {
+        method: method,
+        headers: new Headers(httpHeaders),
+        body: JSON.stringify(body)
+      })
+    }
+  }
 
 }
 
@@ -92,3 +107,37 @@ export class Constant {
     }
   }
 }
+
+export class ConditionForm extends AbstractForm{
+  constructor() {
+      super('condition-form')
+  }
+  check(event){
+    if (this.autoBootstrapValid(event)== false) {return false}
+    if (Util.checkConditionValue() ==false){return false}
+    return true
+  }
+}
+
+export class SearchFlow {
+  searchEvent(conditionObject, successObject){
+    $('#search_btn').click((event)=> {
+      Util.removeAlert()
+      if (conditionObject.check(event)){
+        successObject.execute()}
+      else{
+        Util.addAlert("搜尋條件，怪怪的喔！", 'danger')}
+      }
+     )
+  }
+
+  cleanSearchEvent(){
+    Util.removeAlert()
+    $('#clean_search_btn').click(()=> {
+        Util.cleanConditionValue()
+      }
+    )
+  }
+}
+
+

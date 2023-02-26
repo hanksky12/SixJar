@@ -1,56 +1,53 @@
 
 import { Ajax } from './ajax.js'
-import {RequestData} from './request.js'
-import { Util, Constant } from './util.js'
+import { ChartRequest,RefreshTokenRequest } from './request.js'
+import { Constant ,SearchFlow, ConditionForm } from './util.js'
 
-class RegisterEvent{
-  constructor(){
-    this.constantObject= new Constant() 
 
-  }
-
-  searchEvent(){
-    let that = this
-    $('#search_btn').click(()=> {
-      Util.removeAlert()
-      if (that.#checkCondition()){
-        that.#initChart()}
-      else{
-        Util.addAlert("搜尋條件,怪怪的喔！", 'danger')}
-      }
-     )
-  }
-
-  #checkCondition(){
-    if (document.getElementById('selectChart').value  ==""){return false}
-    if (Util.checkConditionValue() ==false){return false}
+class ChartConditionForm extends ConditionForm{
+  check(event){
+    if (super.check(event)== false){return false}
+    if (document.getElementById('selectChart').value  == ""){return false}
     return true
   }
+}
 
-  cleanSearchEvent(){
-    Util.removeAlert()
-    $('#clean_search_btn').click(
-      ()=> {
-        Util.cleanConditionValue()
-      }
-    )
-  }
 
-  async #initChart(){
-    let requestObject = new RequestData(this.constantObject)
-    let chartRequest = requestObject.getChart()
-    let tokenRequest = requestObject.getRefreshToken()
-    let chartResponse = await Ajax.sendAutoRefresh(chartRequest, tokenRequest, this.constantObject.httpHeaders)
+class Chart{
+  constructor(constantObject) {
+    this.constantObject = constantObject
+}
+  async execute(){
+    // let requestObject = new RequestData(this.constantObject)
+    let chartRequest = ChartRequest.create(this.constantObject)
+    // let tokenRequest = requestObject.getRefreshToken()
+    // let tokenRequest = RefreshTokenRequest.create(this.constantObject)
+    let chartResponse = await Ajax.sendAutoRefresh(chartRequest, this.constantObject)
+
     let chartResponseJson = JSON.parse(chartResponse.data.chart)
     // console.log(chartResponseJson)
     let jarChart = document.getElementById('jarChart');
     Plotly.newPlot(jarChart, chartResponseJson)
   } 
+}
+
+
+class RegisterEvent{
+  constructor(){
+    this.constantObject= new Constant()
+    this.chartObject= new Chart(this.constantObject)
+    this.searchFlowObject= new SearchFlow()
+    this.conditionFormObject= new ChartConditionForm()
+  }
+
+  initSearch(){
+    this.searchFlowObject.searchEvent(this.conditionFormObject,this.chartObject)
+    this.searchFlowObject.cleanSearchEvent()
+  }
 
 }
 
 var eventObject = new RegisterEvent()
-eventObject.searchEvent()
-eventObject.cleanSearchEvent()
+eventObject.initSearch()
 
 

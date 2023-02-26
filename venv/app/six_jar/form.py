@@ -1,10 +1,8 @@
 from datetime import datetime
-
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, \
-    ValidationError, IntegerField, DateField, SelectField, TextAreaField
-from wtforms.validators import DataRequired
-from wtforms import validators
+    ValidationError, IntegerField, DateField, SelectField, TextAreaField, validators
+
 from .model import Jars
 
 
@@ -13,12 +11,15 @@ class JarForm(FlaskForm):
 
 
 class AbstractIncomeAndExpenseForm(FlaskForm):
-    date = DateField('日期', default=datetime.today(),
+    date = DateField('日期',
+                     default=datetime.today(),
                      format="%Y-%m-%d",
-                     validators=[DataRequired()])
-    money = IntegerField('金額', default=0, validators=[
-        validators.NumberRange(min=1),
-        DataRequired()])
+                     validators=[validators.DataRequired()])
+    money = IntegerField('金額',
+                         default=0,
+                         validators=[
+                             validators.NumberRange(min=1),
+                             validators.DataRequired()])
 
     remark = TextAreaField('備註', validators=[validators.Length(0, 50)])
 
