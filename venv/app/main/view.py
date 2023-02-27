@@ -17,6 +17,7 @@ def handle_request_parsing_error(err, req, schema, error_status_code, error_head
     """webargs error handler that uses Flask-RESTFul abort function to return
     a JSON error response to the client.
     """
+    print("handle_request_parsing_error")
     status_code = error_status_code or 400
     abort(status_code, errors=err.messages)
 

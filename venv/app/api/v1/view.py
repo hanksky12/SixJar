@@ -1,14 +1,15 @@
+import time
+
 from marshmallow import Schema, fields
 from werkzeug.exceptions import HTTPException
-from flask import make_response
+from flask import make_response, copy_current_request_context
 from flask_login import login_user
 from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
 from flask_jwt_extended import \
     jwt_required, current_user, get_jwt_identity, create_access_token, set_access_cookies
-
-
+from threading import Thread
 from . import api_bp, api
-from ... import jwt, docs
+from ... import jwt, docs, executor, db, FlaskApp, socketio
 from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
 from ...user.control import UserControl
 from ...user.model import User
@@ -40,17 +41,20 @@ def user_lookup_callback(_jwt_header, jwt_data):
 def token_not_fresh_callback(jwt_header, jwt_payload):
     return ResponseTool.params_error(message=f"重要操作，請輸入密碼")
 
-
+#
 @api_bp.errorhandler(CustomizeError)
 def customize_error(e):
+    print("api customize_error")
     return ResponseTool.params_error(message=f"失敗,{e}")
 
 
 # @api_bp.app_errorhandler(Exception)
 # def handle_exception(e):
 #     # pass through HTTP errors
+#     print("api handle_exception")
 #     if isinstance(e, HTTPException):
 #         return e
+#
 #     print(e)
 #     return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 
@@ -105,7 +109,7 @@ class IncomeAndExpensePostApi(AbstractIncomeAndExpense):
     def post(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.insert()
-        return ResponseTool.vresult(code=201, message="成功新增", data=control.response_data)
+        return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
 
 
 class IncomeAndExpenseFakeApi(AbstractIncomeAndExpense):
@@ -114,18 +118,33 @@ class IncomeAndExpenseFakeApi(AbstractIncomeAndExpense):
         request_schema=FakeDataSchema,
         response_schema=EmptySchema)
     def post(self, **kwargs):
-        print(kwargs)
+        number = kwargs["number"]
         control = IncomeAndExpenseControl(**kwargs)
-        control.insert_fake_data()
-        return ResponseTool.result(code=201, message="成功新增")
-        #3.待測試fake_data api
-        #4.待完成刪除fake_data api
+
+        @copy_current_request_context
+        def insert_fake_data(control_object, __number):
+            """
+            用copy_current_request_context 將當前的app request 上下文,db複製到另一個thread，
+            省去app.app_context() 和 其他globe的傳參
+            """
+            try:
+                control_object.insert_fake_data()
+                time.sleep(1)
+                #flash 是到flask 的session 做寫入，就算成功帶過來thread,下一個request也被無法到這邊取出
+                socketio.send(f"新增{__number}筆成功")  # 建立socket雙向連線
+            except Exception as e:
+                socketio.send(f"新增失敗，請洽資訊人員")
+            print("結束新增")
+
+        executor.submit(insert_fake_data, control, number)
+        return ResponseTool.result(code=201, message="已在後台，開始新增資料，有結果將回傳通知")
+
 
     @DecoratorTool.integrate(
         tags_list=AbstractIncomeAndExpense.tags_list,
         request_schema=UserIdSchema,
         response_schema=EmptySchema)
-    def delete(self, **kwargs):#todo
+    def delete(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.delete_fake_data()
         return ResponseTool.success(message="刪除成功")

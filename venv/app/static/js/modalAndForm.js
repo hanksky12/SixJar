@@ -1,6 +1,6 @@
 import { Util } from './util.js'
 import { Ajax } from './ajax.js'
-import {UserRequest, UserLoginRequest, JarRequest, RefreshTokenRequest} from './request.js'
+import {UserRequest, UserLoginRequest, JarRequest} from './request.js'
 import { AbstractForm, AbstractModal } from './abstract.js'
 
 
@@ -120,14 +120,8 @@ export  class JarForm extends AbstractForm{
     async #inputPassword(jarModalObject,constantObject){
       if (jarModalObject.method!="刪除") {return true}
       jarModalObject.hide()
-      let passwordModalObject = new PasswordModal() 
-      passwordModalObject.show()
-      let passwordFormObject = new PasswordForm()
-      let is_pass = await passwordFormObject.checkPassword(constantObject)
-      if (is_pass){
-        passwordModalObject.hide()
-        return true}
-      Util.addAlert("密碼錯誤，請檢查長度是否介於2-10", 'danger')
+      let userPasswordObject = new UserPasswordFlow()
+      if (await userPasswordObject.check(constantObject)){return true}
       return false
     }
 
@@ -146,15 +140,10 @@ export  class JarForm extends AbstractForm{
 
     async #sendRequestAndChangeDisplay(constantObject,currentRowObject,jarModalObject, incomeAndExpenseTableObject) {
       console.log("sendRequestAndChangeDisplay")
-      // let requestObject = new RequestData(constantObject)
       let jarRequest = JarRequest.create(constantObject,currentRowObject,jarModalObject, this)
-      // let jarRequest = requestObject.getJar(currentRowObject,jarModalObject, this)
-      // let tokenRequest = RefreshTokenRequest.create(constantObject)
-      // let tokenRequest = requestObject.getRefreshToken()
-      let responseData = await Ajax.sendAutoRefresh(jarRequest,constantObject)
+      let responseData = await Util.sendAjaxAndResonseToAlert(jarRequest, constantObject)
       incomeAndExpenseTableObject.changeDisplayRecord(jarModalObject, currentRowObject, responseData.data)
-      let type = responseData.is_success?'primary' :'danger'
-      Util.addAlert(responseData.message, type)
+
     }
 
     #getValue() {
@@ -165,7 +154,23 @@ export  class JarForm extends AbstractForm{
         this.income_and_expense = document.getElementById('selectType').value
       }
     }
-  
+
+export class UserPasswordFlow{
+  async check(constantObject){
+    let passwordModalObject = new PasswordModal() 
+    passwordModalObject.show()
+    let passwordFormObject = new PasswordForm()
+    let is_pass = await passwordFormObject.checkPassword(constantObject)
+    if (is_pass){
+      passwordModalObject.hide()
+      return true}
+    Util.addAlert("密碼錯誤，請檢查長度是否介於2-10", 'danger')
+    return false
+  }
+
+
+}
+
 class PasswordForm extends AbstractForm{
   constructor() {
     super('password-form')
@@ -193,14 +198,9 @@ class PasswordForm extends AbstractForm{
 
   async #sendRequest(constantObject) {
     console.log("送出使用者密碼驗證")
-    // let requestObject = new RequestData(constantObject)
-    // let userRequest = requestObject.getUser()
     let userRequest = UserRequest.create(constantObject)
-    // let tokenRequest = RefreshTokenRequest.create(constantObject)
-    // let tokenRequest = requestObject.getRefreshToken()
     let userResponse = await Ajax.sendAutoRefresh(userRequest,  constantObject)
     let password = document.getElementById('inputPassword').value
-    // let userLoginRequest = requestObject.getUserLogin(userResponse.data.email, password)
     let userLoginRequest = UserLoginRequest.create(constantObject,userResponse.data.email, password)
     let userLoginResponse = await Ajax.sendAutoRefresh(userLoginRequest, constantObject)
     if (userLoginResponse.is_success){return true}

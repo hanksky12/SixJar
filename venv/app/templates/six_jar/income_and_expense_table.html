@@ -3,7 +3,6 @@
 {% block section1 %}
 
 {% include 'six_jar/jar_modal.html' %}
-{% include 'six_jar/password_modal.html' %}
 
 <h3 class="text-primary "><b>📙支出收入表</b></h3>
 <div style="border:1px blue dotted ;padding:6px 5px;">
@@ -19,9 +18,9 @@
   <button class="btn btn-dark" id="clean_search_btn" >清空</button>
   <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#jarModal" data-bs-method="新增">新增</button>
 </div>
+{% endblock %}
 
-{% include 'six_jar/alert.html' %}
-
+{% block section2 %}
 <div class="table-responsive">
   <div class="container">
   <div id="toolbar" class="toolbar"></div>

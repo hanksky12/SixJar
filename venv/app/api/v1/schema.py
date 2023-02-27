@@ -90,8 +90,8 @@ class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
     jar_name = fields.Str(validate=validate.OneOf(Jars.names()))
     minimum_money = fields.Int(validate=validate.Range(min=1), load_default=1)
     maximum_money = fields.Int(validate=validate.Range(min=1), load_default=9999)
-    earliest_date = fields.DateTime(format='%Y-%m-%d', load_default=datetime.strptime('2000-01-01', '%Y-%m-%d'))
-    latest_date = fields.DateTime(format='%Y-%m-%d', load_default=datetime.now())
+    earliest_date = fields.Date(format='%Y-%m-%d', load_default=datetime.strptime('2000-01-01', '%Y-%m-%d').date())
+    latest_date = fields.Date(format='%Y-%m-%d', load_default=datetime.now().date())
 
     @validates_schema
     def validate_money(self, data, **kwargs):  # 一定要kwargs
@@ -99,8 +99,8 @@ class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
             return
         if data.get("maximum_money") is None:
             return
-        if data["minimum_money"] >= data["maximum_money"]:
-            raise ValidationError("最小金額>=最大金額")
+        if data["minimum_money"] > data["maximum_money"]:
+            raise ValidationError("最小金額>最大金額")
 
     @validates_schema
     def validate_date(self, data, **kwargs):  # 一定要kwargs
@@ -108,8 +108,8 @@ class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
             return
         if data.get("latest_date") is None:
             return
-        if data["earliest_date"] >= data["latest_date"]:
-            raise ValidationError("最早日期>=最晚日期")
+        if data["earliest_date"] > data["latest_date"]:
+            raise ValidationError("最早日期>最晚日期")
 
 
 class FakeDataSchema(QueryConditionIncomeAndExpenseSchema):

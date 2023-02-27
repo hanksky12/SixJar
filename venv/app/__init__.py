@@ -10,25 +10,27 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from contextlib import contextmanager
 from .config import config
-
+from concurrent.futures import ThreadPoolExecutor
+from flask_socketio import SocketIO
 
 class FlaskApp:
     @classmethod
     def create(cls):
         cls.app = Flask(__name__,
-                    static_url_path='/static',  # 虛擬靜態路徑
-                    static_folder='static/')  # 指定靜態上層根目錄
+                        static_url_path='/static',  # 虛擬靜態路徑
+                        static_folder='static/')  # 指定靜態上層根目錄
 
 
 metadata = MetaData(
     naming_convention={
-    "ix": 'ix_%(column_0_label)s',
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s"
+        "ix": 'ix_%(column_0_label)s',
+        "uq": "uq_%(table_name)s_%(column_0_name)s",
+        "ck": "ck_%(table_name)s_%(constraint_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+        "pk": "pk_%(table_name)s"
     }
 )
+
 
 class SQLAlchemy(BaseSQLAlchemy):
     @contextmanager
@@ -41,18 +43,17 @@ class SQLAlchemy(BaseSQLAlchemy):
             raise e
 
 
+executor = ThreadPoolExecutor(2)
 db = SQLAlchemy(metadata=metadata)
 bootstrap = Bootstrap()
 docs = FlaskApiSpec()
 migrate = Migrate()
 jwt = JWTManager()
 login_manager = LoginManager()
-login_manager.login_view = 'user.login3' #endpoint
-login_manager.login_message = "請先登入" #未登入的訊息
-login_manager.login_message_category = "info" #未登入的訊息等級
-
-
-
+login_manager.login_view = 'user.login3'  # endpoint
+login_manager.login_message = "請先登入"  # 未登入的訊息
+login_manager.login_message_category = "info"  # 未登入的訊息等級
+socketio = SocketIO()
 
 def create_app():
     load_dotenv()
@@ -64,9 +65,8 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-
-
-    #避免循環import
+    socketio.init_app(app)
+    # 避免循環import
     from .main import main_bp
     app.register_blueprint(main_bp)
 
@@ -82,10 +82,9 @@ def create_app():
     from .commands import commands_bp
     app.register_blueprint(commands_bp)
 
-    #分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
+    # 分之路由要先註冊，資料庫model 才抓得到有被 import，文件初始化才抓得到
     with app.app_context():
         db.create_all()
 
     docs.init_app(app)
     return app
-

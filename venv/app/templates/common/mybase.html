@@ -6,6 +6,7 @@
     {% include 'common/navbar.html' %}
 {% endblock %}
 
+<div id='io_content'></div>
 
 {% block content %}
 <div class="container">
@@ -27,19 +28,24 @@
 <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="red" size=6>
 <div class="banner" >
   <div class="quote">
+      {% include 'common/password_modal.html' %}
     {% block section1 -%}
     {%- endblock section1 %}
+      {% include 'common/alert.html' %}
    </div>
 </div>
 <br /><br />
-      <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="red" size=6>
+
 
 <div class="banner" >
   <div class="quote">
+
     {% block section2 -%}
     {%- endblock section2 %}
   </div>
 </div>
+
+<hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="red" size=6>
 <br /><br />
 {% block section3 -%}
 {%- endblock section3 %}

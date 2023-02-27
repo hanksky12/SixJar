@@ -1,14 +1,22 @@
 from marshmallow import Schema, fields
-from flask import flash
+from flask import flash, current_app, jsonify
+from functools import wraps
+from jwt import exceptions
 from flask_apispec import use_kwargs, marshal_with, doc
 from flask_jwt_extended import \
     create_access_token, \
     create_refresh_token, \
     set_access_cookies, \
     set_refresh_cookies, \
-    unset_jwt_cookies,\
+    unset_jwt_cookies, \
     jwt_required, \
-    current_user
+    current_user, \
+    verify_jwt_in_request
+
+# from typing import Sequence, Union
+
+
+# LocationType = Union[str, Sequence, None]
 
 
 def flash_form_error(form):
@@ -39,12 +47,22 @@ class ResponseTool:
         return cls.result(code=400, message=message, data=data)
 
     @classmethod
+    def token_error(cls, message="", data=None):
+        return cls.result(code=401, message=message, data=data)
+
+    @classmethod
     def inside_error(cls, message="", data=None):
         return cls.result(code=500, message=message, data=data)
 
     @classmethod
     def result(cls, code, message="", data=None):
         return {"code": code, "message": message, "data": data}
+
+    @classmethod
+    def bad_request(cls, message):
+        response = jsonify({'message': message})
+        response.status_code = 401
+        return response
 
 
 class DecoratorTool:
@@ -72,7 +90,7 @@ class DecoratorTool:
             @doc(tags=tags_list)
             @use_kwargs(request_schema, location=("querystring" if method == "GET" else 'json'))  # 需求的篩選與驗證 失敗就不會進到期下路由
             @marshal_with(SchemaTool.return_response_schema(response_schema, return_list))
-            @jwt_required(fresh=fresh, refresh=refresh)
+            @DecoratorTool.jwt_required_customized(fresh=fresh, refresh=refresh)
             def wrapper(*args, **kwargs):
                 if verify_user and current_user.id != kwargs["user_id"]:
                     return ResponseTool.params_error(message="使用者id驗證不符合cookie", data=kwargs)
@@ -81,6 +99,32 @@ class DecoratorTool:
             return wrapper
 
         return outer_wrapper
+
+    @staticmethod
+    def jwt_required_customized(
+            optional=False,
+            fresh=False,
+            refresh=False,
+            locations=None,
+            verify_type=True):
+        def wrapper(fn):
+            @wraps(fn)
+            def decorator(*args, **kwargs):
+                try:
+                    verify_jwt_in_request(optional, fresh, refresh, locations, verify_type)
+                    return current_app.ensure_sync(fn)(*args, **kwargs)
+                except exceptions.ExpiredSignatureError as e:
+                    print("exceptions.ExpiredSignatureError")
+                    print(e)
+                    return ResponseTool.bad_request(message="Signature has expired")
+                except Exception as e:
+                    print("exceptions")
+                    print(e)
+                    return current_app.ensure_sync(fn)(*args, **kwargs)
+
+            return decorator
+
+        return wrapper
 
 
 class SchemaTool:

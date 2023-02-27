@@ -4,13 +4,14 @@ import {
 import {
   JarModal,
   CurrentRow,
-  JarForm,
-  ConditionForm
+  JarForm
+  
 } from './modalAndForm.js'
 import {
   Util,
   Constant,
-  SearchFlow
+  ConditionFlow,
+  ConditionForm
 } from './util.js'
 
 class RegisterEvent {
@@ -20,14 +21,14 @@ class RegisterEvent {
     this.jarFormObject = new JarForm()
     this.jarModalObject = new JarModal()
     this.incomeAndExpenseTableObject = new IncomeAndExpenseTable(this.constantObject)
-    this.searchFlowObject = new SearchFlow()
+    this.searchFlowObject = new ConditionFlow()
     this.conditionFormObject = new ConditionForm()
   }
 
   initModalAndForm() {
     let that = this
     $("#jarModal").on('show.bs.modal', function (event) {
-      console.log("初始化modal") //order is important
+       //order is very important
       Util.removeAlert()
       that.jarModalObject.connect(event)
       that.currentRowObject.getInfo(that.jarModalObject.button, that.jarModalObject.method, Util.getTodayDate())
@@ -36,7 +37,7 @@ class RegisterEvent {
   }
 
   initSearch() {
-    this.searchFlowObject.searchEvent(this.conditionFormObject, this.incomeAndExpenseTableObject)
+    this.searchFlowObject.conditionEvent(this.conditionFormObject, this.incomeAndExpenseTableObject)
     this.searchFlowObject.cleanSearchEvent()
   }
 

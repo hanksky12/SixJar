@@ -1,4 +1,5 @@
 import { AbstractForm } from './abstract.js'
+import { Ajax } from './ajax.js'
 export class Util {
   static getTodayDate() {
     let fullDate = new Date();
@@ -32,6 +33,13 @@ export class Util {
     alertPlaceholder.append(wrapper)
   }
 
+  static async sendAjaxAndResonseToAlert(request, constantObject) {
+    let responseData = await Ajax.sendAutoRefresh(request, constantObject)
+    const type = responseData.is_success?'primary' :'danger'
+    Util.addAlert(responseData.message, type)
+    return responseData
+  }
+
   static getCookie(cname) {
     let name = cname + "=";
     let ca = document.cookie.split(';');
@@ -59,8 +67,8 @@ export class Util {
     let minimum_money = parseInt(document.getElementById('minimum_money').value )
     let maximum_money = parseInt(document.getElementById('maximum_money').value )
     if (minimum_money == 0){return false}
-    if ((earliest_date && latest_date)&& (earliest_date >= latest_date)){return false}
-    if ((minimum_money && maximum_money) && (minimum_money >= maximum_money)){return false}
+    if ((earliest_date && latest_date)&& (earliest_date > latest_date)){return false}
+    if ((minimum_money && maximum_money) && (minimum_money > maximum_money)){return false}
     return true
   }
 
@@ -119,21 +127,22 @@ export class ConditionForm extends AbstractForm{
   }
 }
 
-export class SearchFlow {
-  searchEvent(conditionObject, successObject){
-    $('#search_btn').click((event)=> {
+export class ConditionFlow {
+
+  conditionEvent(conditionObject, successObject, butId = '#search_btn'){
+    $(butId).click((event)=> {
       Util.removeAlert()
       if (conditionObject.check(event)){
         successObject.execute()}
       else{
-        Util.addAlert("搜尋條件，怪怪的喔！", 'danger')}
+        Util.addAlert("設定的條件，怪怪的呦！", 'danger')}
       }
      )
   }
 
-  cleanSearchEvent(){
+  cleanSearchEvent(cleanBtnId='#clean_search_btn'){
     Util.removeAlert()
-    $('#clean_search_btn').click(()=> {
+    $(cleanBtnId).click(()=> {
         Util.cleanConditionValue()
       }
     )

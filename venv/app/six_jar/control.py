@@ -196,7 +196,9 @@ class IncomeAndExpenseControl:
 
     def __insert(self):
         with db.auto_commit():
+            # print("__insert")
             savings, income_and_expense = self.__add_record()
+            print("__insert")
             db.session.add_all([savings, income_and_expense])
         return income_and_expense, savings
 
@@ -205,8 +207,16 @@ class IncomeAndExpenseControl:
         select_income_and_expense = self.__kwargs.get('income_and_expense')
         select_jar_name = self.__kwargs.get('jar_name')
         for number in range(self.__kwargs['number']):
+            print(f"新增第{number}筆")
             self.__random_value(select_income_and_expense, select_jar_name)
             self.__insert()
+
+    def delete_fake_data(self):
+        income_and_expense_list = IncomeAndExpense.query.filter_by(remark='我是測試資料').all()
+        with db.auto_commit():
+            for income_and_expense in income_and_expense_list:
+                self.__update_savings(income_and_expense, is_reverse=True)
+                db.session.delete(income_and_expense)
 
     def __random_value(self, select_income_and_expense, select_jar_name):
         self.__random_income_and_expense(select_income_and_expense)
@@ -215,31 +225,28 @@ class IncomeAndExpenseControl:
         self.__random_money()
 
     def __random_income_and_expense(self, select_income_and_expense):
-        print("__random_income_and_expense")
+        # print("__random_income_and_expense")
         if select_income_and_expense is None:
             self.__kwargs['income_and_expense'] = random.choice(['income', 'expense'])
-        print(self.__kwargs['income_and_expense'])
+        # print(self.__kwargs['income_and_expense'])
 
     def __random_jar_name(self, select_jar_name):
-        print("__random_jar_name")
+        # print("__random_jar_name")
         if select_jar_name is None:
             self.__kwargs['jar_name'] = random.choice(Jars.names())
-        print(self.__kwargs['jar_name'])
+        # print(self.__kwargs['jar_name'])
 
     def __random_date(self):
-        print("__random_date")
-        print((datetime.datetime.now().date()))
-        print(self.__kwargs["earliest_date"])
-        print(self.__kwargs["latest_date"])
+        # print("__random_date")
         self.__kwargs['date'] = \
             (random.random() * (self.__kwargs["latest_date"] - self.__kwargs["earliest_date"]) + self.__kwargs[
                 "earliest_date"])
-        print(self.__kwargs['date'])
+        # print(self.__kwargs['date'])
 
     def __random_money(self):
-        print("__random_money")
+        # print("__random_money")
         self.__kwargs['money'] = random.randint(self.__kwargs["minimum_money"], self.__kwargs["maximum_money"])
-        print(self.__kwargs['money'])
+        # print(self.__kwargs['money'])
 
     def __add_record(self):
         self.__jar_id = self.__return_jar_id()

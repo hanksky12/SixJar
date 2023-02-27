@@ -3,9 +3,7 @@
 
 {% block section1 %}
 
-{% include 'six_jar/password_modal.html' %}
-
-<h3 class="text-primary "><b>🗂支出收入隨機資料模擬輸入</b></h3>
+<h3 class="text-primary "><b>🗂支出收入隨機資料輸入</b></h3>
 <div style="border:1px blue dotted ;padding:6px 5px;">
   <div class="container">
     <form id="condition-form" class='needs-validation' action="#" novalidate>
@@ -29,16 +27,13 @@
   </div>
 </div>
 <div class=" mb-3">
-  <button class="btn btn-success">新增</button>
+  <button class="btn btn-success" id="insert_btn">新增</button>
   <button class="btn btn-dark" id="clean_search_btn">清空</button>
-<!--  <button class="btn btn-danger" id="delete_all_btn">全部模擬資料刪除</button>-->
+  <button class="btn btn-danger" id="delete_all_btn">全部模擬資料刪除</button>
 </div>
-
-
-{% include 'six_jar/alert.html' %}
-
-
 {% endblock %}
+
+
 
 {% block scripts %}
 <script type="module" src="{{url_for('static', filename='js/income_and_expense_fake_data.js')}}"></script>

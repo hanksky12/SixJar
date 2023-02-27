@@ -18,14 +18,17 @@ class ResponseData {
 export class Ajax {
   static async sendAutoRefresh(request, constantObject) {
     let cloneRequest = request.clone() //fetch 目前禁止同一個request發兩次
-    let tokenRequest = RefreshTokenRequest.create(constantObject)
+ 
     let httpHeaders = constantObject.httpHeaders
     let responseData
+
+    let tokenObject = new RefreshTokenRequest()
+    let tokenRequest = tokenObject.create(constantObject)
     try {
       responseData = await Ajax.send(request)
     } catch (error) {
       console.log(error.message)
-      if (error.message == "Token has expired") {
+      if (error.message == "Token has expired" || error.message == "Signature has expired") {
         await Ajax.send(tokenRequest)
         request = await Ajax.updateCsrfToken(httpHeaders, cloneRequest) // Request 用過也不能當基礎
         responseData = await Ajax.send(request)

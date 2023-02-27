@@ -108,6 +108,8 @@ export class IncomeAndExpenseTable{
             console.log(jqXHR["responseJson"])
             if (status==401) {
                 return this.#refreshToken()}
+            // else if (status==401) {
+            //       return this.#refreshToken()}
             else {
                 return Util.addAlert("表單資料load失敗！", 'danger')}
             }, //更新token
@@ -119,25 +121,6 @@ export class IncomeAndExpenseTable{
     execute(){
       this.table.bootstrapTable('refresh', {pageNumber :1})
     }
-
-    // searchEvent(){
-    //   let that = this
-    //   $('#search_btn').click(()=> {
-    //     Util.removeAlert()
-    //     if (Util.checkConditionValue())
-    //         {that.table.bootstrapTable('refresh', {pageNumber :1})}
-    //     else{Util.addAlert("搜尋條件,怪怪的喔！", 'danger')}
-    //     }
-    //     )
-    // }
-    // cleanSearchEvent(){
-    //   Util.removeAlert()
-    //   $('#clean_search_btn').click(
-    //     ()=> {
-    //       Util.cleanConditionValue()
-    //     }
-    //   )
-    // }
   
     changeDisplayRecord(jarModalObject, currentRowObject, responseData){
       if (jarModalObject.method == "刪除"){
@@ -201,11 +184,10 @@ export class IncomeAndExpenseTable{
   }
 
   async #refreshToken(){
-    // let requestObject = new RequestData(this.constantObject)
-    let tokenRequest = RefreshTokenRequest.create(constantObject)
-    // let tokenRequest = requestObject.getRefreshToken()
+    let tokenObject = new RefreshTokenRequest()
+    let tokenRequest = tokenObject.create(this.constantObject)
     await Ajax.send(tokenRequest)
-    await this.table.bootstrapTable('refresh');
+    await this.table.bootstrapTable('refresh')
 }
 }
   
