@@ -113,7 +113,7 @@ class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
 
 
 class FakeDataSchema(QueryConditionIncomeAndExpenseSchema):
-    number = fields.Int(required=True, validate=validate.Range(min=10, max=1000))
+    number = fields.Int(required=True, validate=validate.Range(min=10, max=5000))
 
 
 class QueryListIncomeAndExpenseSchema(QueryConditionIncomeAndExpenseSchema):

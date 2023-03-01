@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from contextlib import contextmanager
+
 from .config import config
 from concurrent.futures import ThreadPoolExecutor
 from flask_socketio import SocketIO

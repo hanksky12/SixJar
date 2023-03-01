@@ -77,7 +77,9 @@ def income():
 def savings():
     control = IncomeAndExpenseControl(user_id=current_user.id)
     control.init_savings()
-    savings_list = control.get_saving_list()
+    savings_list, total_savings = control.get_saving_list()
+    message = "生活還算過得去^^" if total_savings > 1000 else "請注意開銷～"
+    flash(f"帳戶總額：{total_savings}元;  {message}", category='info')
     return render_template("six_jar/savings.html",
                            savings_list=savings_list,
                            user_name=current_user.name)

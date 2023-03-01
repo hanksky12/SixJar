@@ -131,6 +131,9 @@ export class ConditionFlow {
 
   conditionEvent(conditionObject, successObject, butId = '#search_btn'){
     $(butId).click((event)=> {
+      let toastLiveExample = document.getElementById('liveToast')
+      var toast = new bootstrap.Toast(toastLiveExample)
+      toast.show()
       Util.removeAlert()
       if (conditionObject.check(event)){
         successObject.execute()}

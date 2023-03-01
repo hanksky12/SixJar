@@ -1,7 +1,6 @@
 import os
 import datetime
 import sqlalchemy
-
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 
@@ -9,7 +8,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 db_user = os.getenv("DB_USER", "")
 db_pass = os.getenv("DB_PASS", "")
 db_name = os.getenv("DB_NAME", "")
+db_host = os.getenv("DB_HOST", "")
 unix_socket_path = os.getenv("INSTANCE_UNIX_SOCKET", "")
+
+
+print(f'mysql+pymysql://{db_user}:{db_pass}@{db_host}:3306/{db_name}')
 
 
 class BaseConfig:
@@ -20,7 +23,7 @@ class BaseConfig:
     JWT_COOKIE_CSRF_PROTECT = True
     JWT_ACCESS_COOKIE_PATH = '/'  # 只有在這個網址下 才送出jwt cookie  後面加什麼不重要/api/dsfdsdffd
     JWT_REFRESH_COOKIE_PATH = '/api/v1/token/refresh'  # 只有在這個網址下 才送出jwt refresh cookie
-    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=1)  # 過期時間
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=2)  # 過期時間
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)  # 過期時間
 
     APISPEC_SPEC = APISpec(
@@ -34,11 +37,13 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
+    SERVER_NAME = 'localhost:8080'
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(basedir, 'project.db')
     DEBUG = True
     SECRET_KEY = 'THIS IS Fix'
     JWT_SECRET_KEY = 'THIS IS Fix'
     JWT_COOKIE_SECURE = True
+
 
 
 class LocalTestConfig(BaseConfig):
@@ -49,7 +54,9 @@ class LocalTestConfig(BaseConfig):
     JWT_SECRET_KEY = 'THIS IS Fix'
     JWT_COOKIE_SECURE = False
 
-class TestConfig(BaseConfig):
+
+class CloudTestConfig(BaseConfig):
+    SERVER_NAME = 'localhost:8080'
     SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
         drivername="mysql+pymysql",
         username=db_user,
@@ -57,6 +64,23 @@ class TestConfig(BaseConfig):
         database=db_name,
         query={"unix_socket": unix_socket_path},
     )
+
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 30,
+        "pool_recycle": 1800
+    }  # create_engine 的參數
+    DEBUG = False
+    SECRET_KEY = os.urandom(10)
+    JWT_SECRET_KEY = os.urandom(10)
+    JWT_COOKIE_SECURE = True
+
+
+class DockerTestConfig(BaseConfig):
+    SERVER_NAME = '0.0.0.0:8080' #讓主機抓得到
+    #db_host 用docker 裡面db的名城
+    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{db_user}:{db_pass}@{db_host}:3306/{db_name}'
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 5,
         "max_overflow": 2,
@@ -79,6 +103,7 @@ class ProductionConfig(BaseConfig):
 config = {
     'development': DevelopmentConfig,
     "local_test": LocalTestConfig,
-    "test": TestConfig,
+    "test": CloudTestConfig,
+    "docker_test": DockerTestConfig,
     'production': ProductionConfig,
 }

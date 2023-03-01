@@ -44,7 +44,7 @@ class RegisterEvent {
     this.conditionFormObject = new FakeConditionForm()
   }
 
-  initSearch() {
+  initPost() {
     this.conditionFlowObject.conditionEvent(this.conditionFormObject, this.fakeDataObject,'#insert_btn')
     this.conditionFlowObject.cleanSearchEvent()
   }
@@ -73,8 +73,9 @@ class RegisterEvent {
 
 
 var eventObject = new RegisterEvent()
-eventObject.initSearch()
-eventObject.initSocket()
+eventObject.initPost()
 eventObject.initDelete()
+eventObject.initSocket()
+
 
 

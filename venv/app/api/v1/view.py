@@ -63,9 +63,12 @@ class AbstractIncomeAndExpense(MethodResource):
     tags_list = ["IncomeAndExpense💰"]
     pass
 
+class AbstractIncomeAndExpenseAdvanced(MethodResource):
+    tags_list = ["IncomeAndExpenseAdvanced💸"]
+    pass
 
 class AbstractToken(MethodResource):
-    tags_list = ["Token"]
+    tags_list = ["Token😛"]
     pass
 
 
@@ -74,9 +77,9 @@ class AbstractUser(MethodResource):
     pass
 
 
-class IncomeAndExpenseListApi(AbstractIncomeAndExpense):
+class IncomeAndExpenseListApi(AbstractIncomeAndExpenseAdvanced):
     @DecoratorTool.integrate(
-        tags_list=AbstractIncomeAndExpense.tags_list,
+        tags_list=AbstractIncomeAndExpenseAdvanced.tags_list,
         request_schema=QueryListIncomeAndExpenseSchema,
         response_schema=ResponseIncomeAndExpenseSchema,
         return_list=True,
@@ -87,10 +90,10 @@ class IncomeAndExpenseListApi(AbstractIncomeAndExpense):
         return {"code": "200", "message": "查詢成功", "data": income_and_expense_list, "total": total}
 
 
-class IncomeAndExpenseChartApi(AbstractIncomeAndExpense):
+class IncomeAndExpenseChartApi(AbstractIncomeAndExpenseAdvanced):
 
     @DecoratorTool.integrate(
-        tags_list=AbstractIncomeAndExpense.tags_list,
+        tags_list=AbstractIncomeAndExpenseAdvanced.tags_list,
         request_schema=QueryChartIncomeAndExpenseSchema,
         response_schema=ChartSchema,
         method="GET")
@@ -100,21 +103,9 @@ class IncomeAndExpenseChartApi(AbstractIncomeAndExpense):
         return ResponseTool.success(message="查詢成功", data={"chart": chart_json_str})
 
 
-class IncomeAndExpensePostApi(AbstractIncomeAndExpense):
-
+class IncomeAndExpenseFakeApi(AbstractIncomeAndExpenseAdvanced):
     @DecoratorTool.integrate(
-        tags_list=AbstractIncomeAndExpense.tags_list,
-        request_schema=RequestIncomeAndExpenseSchema,
-        response_schema=ResponseIncomeAndExpenseSchema)
-    def post(self, **kwargs):
-        control = IncomeAndExpenseControl(**kwargs)
-        control.insert()
-        return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
-
-
-class IncomeAndExpenseFakeApi(AbstractIncomeAndExpense):
-    @DecoratorTool.integrate(
-        tags_list=AbstractIncomeAndExpense.tags_list,
+        tags_list=AbstractIncomeAndExpenseAdvanced.tags_list,
         request_schema=FakeDataSchema,
         response_schema=EmptySchema)
     def post(self, **kwargs):
@@ -141,14 +132,25 @@ class IncomeAndExpenseFakeApi(AbstractIncomeAndExpense):
 
 
     @DecoratorTool.integrate(
-        tags_list=AbstractIncomeAndExpense.tags_list,
+        tags_list=AbstractIncomeAndExpenseAdvanced.tags_list,
         request_schema=UserIdSchema,
         response_schema=EmptySchema)
     def delete(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.delete_fake_data()
         return ResponseTool.success(message="刪除成功")
+################################################################################################
 
+class IncomeAndExpensePostApi(AbstractIncomeAndExpense):
+
+    @DecoratorTool.integrate(
+        tags_list=AbstractIncomeAndExpense.tags_list,
+        request_schema=RequestIncomeAndExpenseSchema,
+        response_schema=ResponseIncomeAndExpenseSchema)
+    def post(self, **kwargs):
+        control = IncomeAndExpenseControl(**kwargs)
+        control.insert()
+        return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
 
 class IncomeAndExpenseApi(AbstractIncomeAndExpense):
 
@@ -180,7 +182,7 @@ class IncomeAndExpenseApi(AbstractIncomeAndExpense):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.delete()
         return ResponseTool.success(message="刪除成功", data=control.response_data)
-
+################################################################################################
 
 class TokenRefreshApi(AbstractToken):
     @DecoratorTool.integrate(
@@ -221,7 +223,7 @@ class UserLogoutApi(AbstractToken):
         control = UserControl()
         control.logout(resp)
         return resp
-
+################################################################################################
 
 class UserPostApi(AbstractUser):
 

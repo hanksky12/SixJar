@@ -196,9 +196,7 @@ class IncomeAndExpenseControl:
 
     def __insert(self):
         with db.auto_commit():
-            # print("__insert")
             savings, income_and_expense = self.__add_record()
-            print("__insert")
             db.session.add_all([savings, income_and_expense])
         return income_and_expense, savings
 
@@ -351,7 +349,7 @@ class IncomeAndExpenseControl:
             .add_columns(Savings.savings, Jar.name) \
             .filter(Savings.user_id == self.__kwargs["user_id"]) \
             .order_by(Savings.jar_id).all()
-        return saving_object_list
+        return saving_object_list, sum([savings.savings for savings in saving_object_list])
 
     @property
     def saving(self):
