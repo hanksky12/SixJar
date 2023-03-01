@@ -20,7 +20,9 @@
 5. RestApi (Flask-RESTful)
 	1. webargs 資料驗證篩選
 	2. [api文件](https://sixjar.de.r.appspot.com/apispec/)
-	
+6. 多線程
+7. websocket
+
 ### 前端
 1. Template,Form 
 	1. Flask-WTF
@@ -34,4 +36,5 @@
 1. plotly圖表資料呈現
 2. 記帳資料的新增，修改，查詢，刪除(重要操作密碼驗證)
 3. 帳號驗證
+4. 隨機資料模擬(子線程操作，websocket回傳)
 
