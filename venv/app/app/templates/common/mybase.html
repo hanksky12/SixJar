@@ -1,0 +1,61 @@
+{% extends "common/base.html" %}
+
+{% block title %}🐾六個罐子🐾{% endblock %}
+
+{% block navbar %}
+    {% include 'common/navbar.html' %}
+{% endblock %}
+
+<div id='io_content'></div>
+
+{% block content %}
+<div class="container">
+    <!-- 用來接後端傳來的flash-message -->
+    {% for message in get_flashed_messages(with_categories=True) %}
+    <div class="alert alert-{{ message[0] }}">
+        <!-- 弄一個x的button，點擊之後讓訊息消失，可參考bootstrap說明 -->
+        {{ message[1]}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    <!-- 讓繼承的頁面有地方可以再加入新的block內容 -->
+    {% block page_content %}{% endblock page_content %}
+</div>
+<br /><br />
+
+
+
+<hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="red" size=6>
+<div class="banner" >
+  <div class="quote">
+      {% include 'common/loading.html' %}
+      {% include 'common/password_modal.html' %}
+    {% block section1 -%}
+    {%- endblock section1 %}
+      {% include 'common/alert.html' %}
+   </div>
+</div>
+<br /><br />
+
+
+<div class="banner" >
+  <div class="quote">
+
+    {% block section2 -%}
+    {%- endblock section2 %}
+  </div>
+</div>
+
+<hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="red" size=6>
+<br /><br />
+{% block section3 -%}
+{%- endblock section3 %}
+{% include 'common/toasts.html' %}
+
+{% endblock %}
+
+
+
+{% block footer %}
+    {% include 'common/footer.html' %}
+{% endblock %}
