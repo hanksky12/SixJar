@@ -1,12 +1,13 @@
 # [SixJar](http://sixjar.ddns.net/)
-## [專案連結]
-[網站](http://sixjar.ddns.net/)
-## [專案理念]
-	藉由平時使用的記帳方法，訓練新觀念與技術的開發，完成一個網站前後端技術的了解
 
-## [專案技術]
+## [Concept]
+	Train the development of new concepts and technologies through accounting methods
+1. Complete the understanding of front-end and back-end technologies of the website
+2. Advance towards large-flow data processing
 
-### 後端
+## [Technology Used]
+
+### Backend
 1. Flask(MVC)(ORM)(Blueprint) 
 2. MySql
 3. Redis
@@ -15,27 +16,38 @@
 	2. JWT (API)
 	3. CSRF protection
 5. RestApi 
-	1. webargs 資料驗證篩選
+	1. webargs 
 	2. [api docs](http://sixjar.ddns.net/apispec/)
-6. Celery
-7. SSE
-8. Deploy(Docker、GoogleCloundEngine)
-
-### 前端
+	
+6. Plotly Express
+7. Celery
+8. SSE
+9. Unit Test
+10. Deploy
+	1. Docker(file & compose)
+	2. GoogleCloundEngine(use [noip](https://www.noip.com/) apply domain and DNS)
+### Frontend
 1. Template,Form 
 	1. Flask-WTF
 	2. Jinja2
 2. JS
 	1. AJAX (Fetch)
-	2. ES6語法
+	2. ES6、ES7
 3. Bootstrap
 4. jQuery
 5. Plotly
 6. RWD
 
-### 功能
-1. plotly圖表資料呈現
-2. 記帳資料的ＣＲＵＤ(重要操作密碼驗證)
-3. 帳號驗證
-4. 隨機大資料模擬(Celery＋SSE)
+### Features
+1. Data visualization(Plotly)
+2. Data CRUD(important data need input password)
+3. Authentication
+4. Random big data simulation(Celery＋SSE)
+5. Check Jwt and request user consistency 
+
+### Todo(next version)
+1. celery periodic tasks exchange rate api write in redis
+2. redis cache route
+3. redis record web views
+
 
