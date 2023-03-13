@@ -40,7 +40,7 @@
 
 ### Features
 1. Data visualization(Plotly)
-2. Data CRUD(important data need input password)
+2. Data CRUD(important data need input user password)
 3. Authentication
 4. Random big data simulation(Celery＋SSE)
 5. Check Jwt and request user consistency 
