@@ -9,21 +9,21 @@
 
 ### Backend
 1. Flask(MVC)(ORM)(Blueprint) 
-2. MySql
-3. Redis
-4. Authentication
+2. DB
+	1. MySql
+	2. Redis
+3. Authentication
 	1. flask-login
 	2. JWT (API)
 	3. CSRF protection
-5. RestApi 
+4. RestApi 
 	1. webargs 
-	2. [api docs](http://sixjar.ddns.net/apispec/)
-	
-6. Plotly Express
-7. Celery
-8. SSE
-9. Unit Test
-10. Deploy
+	2. [api docs](http://sixjar.ddns.net/apispec/)	
+5. Plotly Express
+6. Celery
+7. SSE
+8. Unit Test
+9. Deploy
 	1. Docker(file & compose)
 	2. GoogleCloundEngine(use [noip](https://www.noip.com/) to apply domain and DNS)
 ### Frontend
