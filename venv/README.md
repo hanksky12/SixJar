@@ -19,6 +19,7 @@
 	2. [api docs](http://sixjar.ddns.net/apispec/)
 6. Celery
 7. SSE
+8. Deploy(Docker、GoogleCloundEngine)
 
 ### 前端
 1. Template,Form 
