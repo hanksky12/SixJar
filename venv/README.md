@@ -25,7 +25,7 @@
 8. Unit Test
 9. Deploy
 	1. Docker(file & compose)
-	2. GoogleCloundEngine(Use [No-Ip](https://www.noip.com/) to apply Domain and DNS)
+	2. GoogleCloundEngine(Use [No-Ip](https://www.noip.com/) to apply for Domain and DNS)
 ### Frontend
 1. Template,Form 
 	1. Flask-WTF
