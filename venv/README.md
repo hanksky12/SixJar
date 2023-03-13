@@ -7,21 +7,18 @@
 ## [專案技術]
 
 ### 後端
-1. Flask MVC分層
-2. Blueprint 功能模組化
-3. 資料庫ORM 語法
-	1.  SQLAlchemy
-	2.  本地sqllite
-	3.  雲端google cloud sql
-4. 登入驗證
+1. Flask(MVC)(ORM)(Blueprint) 
+2. MySql
+3. Redis
+4. Authentication
 	1. flask-login
 	2. JWT (API)
 	3. CSRF protection
-5. RestApi (Flask-RESTful)
+5. RestApi 
 	1. webargs 資料驗證篩選
-	2. [api文件](http://sixjar.ddns.net/apispec/)
-6. 多線程
-7. websocket
+	2. [api docs](http://sixjar.ddns.net/apispec/)
+6. Celery
+7. SSE
 
 ### 前端
 1. Template,Form 
@@ -31,6 +28,9 @@
 	1. AJAX (Fetch)
 	2. ES6語法
 3. Bootstrap
+4. jQuery
+5. Plotly
+6. RWD
 
 ### 功能
 1. plotly圖表資料呈現
