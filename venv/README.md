@@ -20,19 +20,17 @@
 	1. webargs 
 	2. [api docs](http://sixjar.ddns.net/apispec/)	
 5. Plotly Express
-6. Celery
+6. Celery(Routing tasks)
 7. SSE
 8. Unit Test
 9. Deploy
 	1. Docker(file & compose)
-	2. GoogleCloundEngine(use [noip](https://www.noip.com/) to apply domain and DNS)
+	2. GoogleCloundEngine(Use [No-Ip](https://www.noip.com/) to apply Domain and DNS)
 ### Frontend
 1. Template,Form 
 	1. Flask-WTF
 	2. Jinja2
-2. JS
-	1. AJAX (Fetch)
-	2. ES6、ES7
+2. JS(Ajax (Fetch))
 3. Bootstrap
 4. jQuery
 5. Plotly
@@ -40,9 +38,9 @@
 
 ### Features
 1. Data visualization(Plotly)
-2. Data CRUD(important data need input user password)
+2. Data CRUD(important data need user password input)
 3. Authentication
-4. Random big data simulation(Asynchronous task and ：Celery+SSE)
+4. Random big data simulation(Asynchronous task：Celery+SSE)
 5. Check Jwt and request user consistency 
 
 ### Todo(next)
