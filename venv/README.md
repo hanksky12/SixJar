@@ -13,7 +13,7 @@
 	1. MySql
 	2. Redis
 3. Authentication
-	1. flask-login
+	1. flask-login(session-based)
 	2. JWT (API)
 	3. CSRF protection
 4. RestApi 
@@ -42,7 +42,7 @@
 1. Data visualization(Plotly)
 2. Data CRUD(important data need input user password)
 3. Authentication
-4. Random big data simulation(Celery＋SSE)
+4. Random big data simulation(Asynchronous task and ：Celery+SSE)
 5. Check Jwt and request user consistency 
 
 ### Todo(next)
