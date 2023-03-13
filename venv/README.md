@@ -45,7 +45,7 @@
 4. Random big data simulation(Celery＋SSE)
 5. Check Jwt and request user consistency 
 
-### Todo(next version)
+### Todo(next)
 1. celery periodic tasks exchange rate api write in redis
 2. redis cache route
 3. redis record web views
