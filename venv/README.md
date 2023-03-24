@@ -10,22 +10,25 @@
 ### Backend
 1. Flask(MVC)(ORM)(Blueprint) 
 2. DB
-	1. MySql
-	2. Redis
+    1. MySql
+    2. Redis
 3. Authentication
-	1. flask-login(session-based)
-	2. JWT (API)
-	3. CSRF protection
+    1. flask-login(session-based)
+    2. JWT (API)
+    3. CSRF protection
 4. RestApi 
-	1. webargs 
-	2. [api docs](http://sixjar.ddns.net/apispec/)	
+    1. webargs 
+    2. [api docs](http://sixjar.ddns.net/apispec/)	
 5. Plotly Express
-6. Celery(Routing tasks)
-7. SSE
-8. Unit Test
-9. Deploy
-	1. Docker(file & compose)
-	2. GoogleCloundEngine(Use [No-Ip](https://www.noip.com/) to apply for Domain and DNS)
+6. Celery(Routing tasks、Periodic tasks)
+7. Redis
+    1. Cache-aside (Lazy-loading)
+    2. Record web views
+8. SSE
+9. Unit Test
+10. Deploy
+     1. Docker(file & compose)
+     2. GoogleCloudEngine(Use [No-Ip](https://www.noip.com/) to apply for Domain and DNS)
 ### Frontend
 1. Template,Form 
 	1. Flask-WTF
@@ -42,6 +45,8 @@
 3. Authentication
 4. Random big data simulation(Asynchronous task：Celery+SSE)
 5. Check Jwt and request user consistency 
+6. Redis cache (based on Cache-aside (Lazy-loading))
+7. Periodic tasks crawler exchange rate 
 
 ### Todo(next)
 1. celery periodic tasks exchange rate api write in redis
