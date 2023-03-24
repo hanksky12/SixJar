@@ -49,8 +49,6 @@
 7. Periodic tasks crawler exchange rate 
 
 ### Todo(next)
-1. celery periodic tasks exchange rate api write in redis
-2. redis cache route
-3. redis record web views
+1. Wsgi + Nginx docker setting
 
 
