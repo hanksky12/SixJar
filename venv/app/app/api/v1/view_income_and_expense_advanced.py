@@ -1,6 +1,8 @@
 from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
-from ... import celery
-from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
+import flask
+import urllib.parse
+from ... import celery, cache
+from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError, RedisTool
 from ...six_jar.control import IncomeAndExpenseControl
 from .schema import \
     EmptySchema, \
@@ -25,6 +27,7 @@ class IncomeAndExpenseListApi(AbstractIncomeAndExpenseAdvanced):
         response_schema=ResponseIncomeAndExpenseSchema,
         return_list=True,
         method="GET")
+    @RedisTool.cache()
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         income_and_expense_list, total = control.query_list()
@@ -38,6 +41,7 @@ class IncomeAndExpenseChartApi(AbstractIncomeAndExpenseAdvanced):
         request_schema=QueryChartIncomeAndExpenseSchema,
         response_schema=ChartSchema,
         method="GET")
+    @RedisTool.cache()
     def get(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         chart_json_str = control.query_chart()
@@ -73,6 +77,7 @@ class IncomeAndExpenseFakeApi(AbstractIncomeAndExpenseAdvanced):
         response_schema=TaskIdSchema)
     def post(self, **kwargs):
         task = celery.send_task(name='insert_fake_data', kwargs=kwargs)
+        RedisTool.update_user_version(kwargs['user_id'])
         return ResponseTool.result(code=202,
                                    message="已在後台，開始操作資料，有結果將回傳通知",
                                    data={"task_id": task.id})
@@ -84,4 +89,5 @@ class IncomeAndExpenseFakeApi(AbstractIncomeAndExpenseAdvanced):
     def delete(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.delete_fake_data()
+        RedisTool.update_user_version(kwargs['user_id'])
         return ResponseTool.success(message="刪除成功")

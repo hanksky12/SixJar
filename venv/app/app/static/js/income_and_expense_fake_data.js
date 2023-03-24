@@ -13,7 +13,7 @@ import {
 
 class FakeConditionForm extends ConditionForm {
   check(event) {
-    if (super.check(event) == false) {
+    if (super.check(event) === false) {
       return false
     }
     if (document.getElementById('selectRecordsNumber').value == "") {
@@ -60,15 +60,6 @@ class RegisterEvent {
     )
   }
 
-  initSocket(){
-    $(document).ready( ()=> {
-      //不適合移到click內不，不是當下回傳結果，只能在整個頁面監聽
-      const socket = io.connect();
-      socket.on("message", function (data) {
-        Util.addAlert(data,"primary")
-      })
-    })
-  }
 }
 
 
@@ -76,7 +67,6 @@ class RegisterEvent {
 var eventObject = new RegisterEvent()
 eventObject.initPost()
 eventObject.initDelete()
-// eventObject.initSocket()
 
 
 

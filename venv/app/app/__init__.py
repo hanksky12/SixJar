@@ -1,19 +1,7 @@
 import os
-# from flask import Flask
 from dotenv import load_dotenv
-
 from .config import config
 from .extension import Extension, FlaskApp
-
-
-
-# class FlaskApp:
-#     @classmethod
-#     def create(cls):
-#         cls.app = Flask(__name__,
-#                         static_url_path='/static',  # 虛擬靜態路徑
-#                         static_folder='static/')  # 指定靜態上層根目錄
-
 
 extension = Extension()
 executor = extension.generate_thread_pool()
@@ -25,7 +13,9 @@ jwt = extension.generate_jwt()
 login_manager = extension.generate_login_manager()
 socketio = extension.generate_socketio()
 celery = extension.generate_celery()
-
+redis = extension.generate_redis()
+cache = extension.generate_cache()
+debug_toolbar = extension.generate_debug_toolbar()
 
 
 def create_app():
@@ -33,10 +23,9 @@ def create_app():
     FlaskApp().create()
     app = FlaskApp().app
     app.config.from_object(config[os.environ["PYTHON_WEB_CONFIG"]])
-    for __object in [jwt, bootstrap, db, login_manager, socketio]:
+    for __object in [jwt, bootstrap, db, login_manager, socketio, cache, debug_toolbar]:
         __object.init_app(app)
     migrate.init_app(app, db)
-
 
     # 避免循環import
     from .main import main_bp
@@ -59,5 +48,5 @@ def create_app():
         db.create_all()
 
     docs.init_app(app)
-    app.run(host=config[os.environ["PYTHON_WEB_CONFIG"]].HOST,port=config[os.environ["PYTHON_WEB_CONFIG"]].PORT)
+    app.run(host=config[os.environ["PYTHON_WEB_CONFIG"]].HOST, port=config[os.environ["PYTHON_WEB_CONFIG"]].PORT)
     return app

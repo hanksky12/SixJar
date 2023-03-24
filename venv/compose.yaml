@@ -24,13 +24,17 @@ services:
       - '3306:3306'
   redis:
     container_name: redis
-    image: hanksky123/sixjar-redis:v1.0.0
+#    image: hanksky123/sixjar-redis:v1.0.0
+
+
+#    platform: linux/amd64
+
+#    volumes:
+#      - redis-data:/data
     build:
       context: redis
     networks:
       - backnet
-    expose:
-      - '6379'
     ports:
       - '6379:6379'
   web:
@@ -38,9 +42,11 @@ services:
     build:
       context: app
       target: builder
-    image: hanksky123/sixjar-web:v1.0.0
+#    image: hanksky123/sixjar-web:v1.0.0
+#    platform: linux/amd64
+    platform: linux/arm64/v8
     ports:
-      - '8080:8080'
+      - '80:8080'
     networks:
       - backnet
     env_file:
@@ -50,14 +56,18 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-      worker:
+      celery-worker:
         condition: service_started
-  worker:
-    container_name: worker
+      celery-beat:
+        condition: service_started
+  celery-worker:
+    container_name: celery-worker
     build:
       context: app
       target: builder
-    image: hanksky123/sixjar-web:v1.0.0
+#    image: hanksky123/sixjar-web:v1.0.0
+#    platform: linux/amd64
+    platform: linux/arm64/v8
     networks:
       - backnet
     env_file:
@@ -69,9 +79,28 @@ services:
         condition: service_started
       mysql:
         condition: service_healthy
-
+  celery-beat:
+    container_name: celery-beat
+    build:
+      context: app
+      target: builder
+    #    image: hanksky123/sixjar-web:v1.0.0
+    #    platform: linux/amd64
+    platform: linux/arm64/v8
+    networks:
+      - backnet
+    env_file:
+      - app/app/.env
+    command:
+      celery -A app worker --beat -l info
+    depends_on:
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
 volumes:
   mysql-data:
+  redis-data:
 
 secrets:
   mysql-password:

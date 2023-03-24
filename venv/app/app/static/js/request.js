@@ -22,12 +22,12 @@ export class JarRequest {
       "income_and_expense": (jarFormObject.income_and_expense == "收入") ? 'income' : 'expense'
     }
     let method
-    if (modalObject.method == '新增') {
+    if (modalObject.method === '新增') {
       method = 'POST'
-    } else if (modalObject.method == '修改') {
+    } else if (modalObject.method === '修改') {
       method = 'PUT'
       url += "/" + id
-    } else if (modalObject.method == '刪除') {
+    } else if (modalObject.method === '刪除') {
       method = 'DELETE'
       url += "/" + id
       body = {
@@ -80,12 +80,12 @@ export class FakeRequest {
     let body = {
       user_id: constantObject.userId
     }
-    if (method == '新增'){
+    if (method === '新增'){
       httpMethod = "POST"
       if ($('#selectRecordsNumber').val()) {body["number"] = $('#selectRecordsNumber').val()}
       body = Util.getConditionValue(body)
     }
-    else if (method == '刪除') {
+    else if (method === '刪除') {
       httpMethod = "DELETE"
     }
     return Util.createRequest(url, httpMethod, httpHeaders, body)
@@ -115,3 +115,18 @@ export class UserLoginRequest {
   }
 }
 
+
+export class ExchangeRateRequest {
+
+  static create(constantObject, base_currency, target_currency) {
+    console.log('prepareExchangeRateData')
+    let url = constantObject.url + "/exchange-rate"
+    const temp = {
+      user_id: constantObject.userId,
+      "base_currency": base_currency,
+      "target_currency": target_currency
+    }
+    url += '?' + (new URLSearchParams(temp)).toString();
+    return Util.createRequest(url, "GET", constantObject.httpHeaders)
+  }
+}

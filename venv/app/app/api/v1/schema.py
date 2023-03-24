@@ -75,18 +75,22 @@ class IncomeAndExpenseIDSchema(Schema):
 class IncomeAndExpenseSchema:
     income_and_expense = fields.Str(required=True, validate=validate.OneOf(["income", "expense"]))
     money = fields.Int(required=True, validate=validate.Range(min=1))
-    date = fields.DateTime(required=True, format='%Y-%m-%d')
+    date = fields.Date(required=True, format='%Y-%m-%d')
     jar_name = fields.Str(required=True, validate=validate.OneOf(Jars.names()))
     remark = fields.Str(validate=validate.Length(max=50, error='請介於0~50字'))
+
 
 
 class RequestIncomeAndExpenseSchema(IncomeAndExpenseSchema, UserIdSchema):
     pass
 
 
-class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, IncomeAndExpenseSchema):
-    pass
-
+class ResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema):
+    income_and_expense = fields.Str(required=True, validate=validate.OneOf(["income", "expense"]))
+    money = fields.Int(required=True, validate=validate.Range(min=1))
+    date = fields.Str(required=True)
+    jar_name = fields.Str(required=True, validate=validate.OneOf(Jars.names()))
+    remark = fields.Str(validate=validate.Length(max=50, error='請介於0~50字'))
 
 
 class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
@@ -94,7 +98,7 @@ class QueryConditionIncomeAndExpenseSchema(UserIdSchema):
     income_and_expense = fields.Str(validate=validate.OneOf(["income", "expense"]))
     jar_name = fields.Str(validate=validate.OneOf(Jars.names()))
     minimum_money = fields.Int(validate=validate.Range(min=1), load_default=1)
-    maximum_money = fields.Int(validate=validate.Range(min=1), load_default=9999)
+    maximum_money = fields.Int(validate=validate.Range(min=1), load_default=99999)
     earliest_date = fields.Date(format='%Y-%m-%d', load_default=datetime.strptime('2000-01-01', '%Y-%m-%d').date())
     latest_date = fields.Date(format='%Y-%m-%d', load_default=datetime.now().date())
 
@@ -133,3 +137,17 @@ class QueryChartIncomeAndExpenseSchema(QueryConditionIncomeAndExpenseSchema):
 
 class DeleteResponseIncomeAndExpenseSchema(IncomeAndExpenseIDSchema, UserIdSchema):
     pass
+
+
+class ExchangeRateSchema(UserIdSchema):
+    target_currency = fields.Str(required=True, validate=validate.Length(max=3, error='請介於0~3字'))
+    base_currency = fields.Str(required=True, validate=validate.Length(max=3, error='請介於0~3字'))
+
+    @validates_schema
+    def validate_currency(self, data, **kwargs):  # 一定要kwargs
+        if data["target_currency"] == data["base_currency"]:
+            raise ValidationError("基礎與目標幣別相等")
+
+class ExchangeRateResponseSchema(Schema):
+    rate = fields.Float(required=True)
+

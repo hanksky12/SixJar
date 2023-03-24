@@ -2,8 +2,17 @@
 
 {% block section1 %}
 
-<p>歡迎回來 !!!</p>
+
+<div class="row">
+  <div class="col-10">
+    歡迎回來 !!!
+    <button type="button" class="btn btn-danger">
+    登入次數： <span class="badge bg-secondary">{{login_times}}</span>
+    </button>
+  </div>
+</div>
 <h1 class="text-primary" >{{user_name}}</h1>
+
 <div class="row row-cols-1 row-cols-md-6 g-4">
   {% for savings in savings_list %}
   <div class="col">
@@ -11,13 +20,18 @@
       <img src="/static/images/{{loop.index}}.png"  class="card-img-top" alt="...">
       <div class="card-body">
         <h5 class="card-title">{{savings.name}}</h5>
-        <p class="card-text">{{savings.savings}}元</p>
+        <p class="card-text"><h6 class="money">{{savings.savings}}元</h6></p>
       </div>
     </div>
   </div>
   {% endfor %}
 
 </div>
+匯率更新時間：{{exchange_rate_update_time}}
+<br>
+<br>
+{% include "six_jar/exchange_rate_conversion.html" %}
+
 
 {% endblock %}
 
