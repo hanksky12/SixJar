@@ -7,6 +7,7 @@ from . import six_jar_bp
 from .model import Jar, Savings, IncomeAndExpense, Jars
 from .control import IncomeAndExpenseControl
 from ..utils import flash_form_error, CustomizeError
+from .. import cache, redis
 
 
 @six_jar_bp.route("/expense", methods=["POST", "GET"])
@@ -80,22 +81,33 @@ def savings():
     savings_list, total_savings = control.get_saving_list()
     message = "生活還算過得去^^" if total_savings > 1000 else "請注意開銷～"
     flash(f"帳戶總額：{total_savings}元;  {message}", category='info')
+    update_time = redis.get('update_time')
+
+    login_times = redis.get(f'login_times_for_user:{current_user.id}')
     return render_template("six_jar/savings.html",
                            savings_list=savings_list,
-                           user_name=current_user.name)
+                           user_name=current_user.name,
+                           exchange_rate_update_time=update_time,
+                           login_times=login_times
+                           )
 
 
 @six_jar_bp.route("/income-and-expense-table", methods=["GET"])
 @login_required
+@cache.cached(timeout=20 * 60)
 def income_and_expense_table():
-    return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names(),today=datetime.now())
+    return render_template("six_jar/income_and_expense_table.html", jar_name=Jars.names(), today=datetime.now().date())
+
 
 @six_jar_bp.route("/income-and-expense-chart", methods=["GET"])
 @login_required
+@cache.cached(timeout=20 * 60)
 def income_and_expense_chart():
-    return render_template("six_jar/income_and_expense_chart.html", jar_name=Jars.names(),today=datetime.now())
+    return render_template("six_jar/income_and_expense_chart.html", jar_name=Jars.names(), today=datetime.now().date())
+
 
 @six_jar_bp.route("/income-and-expense-fake-data", methods=["GET"])
 @login_required
+@cache.cached(timeout=20 * 60)
 def income_and_expense_fake_data():
-    return render_template("six_jar/income_and_expense_fake_data.html", jar_name=Jars.names(),today=datetime.now())
+    return render_template("six_jar/income_and_expense_fake_data.html", jar_name=Jars.names(), today=datetime.now().date())

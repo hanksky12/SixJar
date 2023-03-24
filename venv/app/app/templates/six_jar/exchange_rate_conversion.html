@@ -1,0 +1,30 @@
+<div class="row">
+  <div class="col">
+    <div class="input-group mb-1">
+      <label class="input-group-text" >幣別:</label>
+      <select class="form-select" id="target-currency" >
+        <option value="" selected>請選擇..</option>
+        <option value="USD">美金USD</option>
+        <option value="EUR">歐元EUR</option>
+        <option value="JPY">日元JPY</option>
+        <option value="HKD">港幣HKD</option>
+        <option value="CNY">人民幣CNY</option>
+        <option value="NZD">紐西蘭NZD</option>
+        <option value="CAD">加拿大CAD</option>
+        <option value="GBP">英鎊GBP</option>
+      </select>
+    </div>
+  </div>
+  <div class="col">
+    <div class="input-group mb-1">
+      <label class="input-group-text" >自行輸入其他幣別:</label>
+    <input id="other-target-currency"  type="text" aria-label="other rate" class="form-control"  value="">
+    </div>
+  </div>
+  <div class="col">
+    <button class="btn btn-success" id="change_btn">轉換</button>
+  </div>
+</div>
+<input id="base-currency" class="form-control" type="text" value="目前單位:TWD;  目標匯率轉換：1 TWD = 1 TWD" aria-label="Disabled input example" disabled readonly>
+
+<script type="module" src="{{url_for('static', filename='js/exchange_rate.js')}}"></script>

@@ -1,6 +1,6 @@
 from flask_apispec import MethodResource, use_kwargs, marshal_with, doc
-
-from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, CustomizeError
+import time
+from ...utils import ResponseTool, DecoratorTool, JwtTool, SchemaTool, RedisTool, CustomizeError
 from ...six_jar.control import IncomeAndExpenseControl
 from .schema import \
     IncomeAndExpenseSchema, \
@@ -8,6 +8,8 @@ from .schema import \
     DeleteResponseIncomeAndExpenseSchema, \
     RequestIncomeAndExpenseSchema, \
     UserIdSchema
+
+from ... import redis
 
 
 class AbstractIncomeAndExpense(MethodResource):
@@ -24,8 +26,8 @@ class IncomeAndExpensePostApi(AbstractIncomeAndExpense):
     def post(self, **kwargs):
         control = IncomeAndExpenseControl(**kwargs)
         control.insert()
+        RedisTool.update_user_version(kwargs['user_id'])
         return ResponseTool.result(code=201, message="成功新增", data=control.response_data)
-
 
 class IncomeAndExpenseApi(AbstractIncomeAndExpense):
 
@@ -46,6 +48,9 @@ class IncomeAndExpenseApi(AbstractIncomeAndExpense):
     def put(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.update()
+        RedisTool.update_user_version(kwargs['user_id'])
+        print("put")
+        print(control.response_data)
         return ResponseTool.success(message="更新成功", data=control.response_data)
 
     @DecoratorTool.integrate(
@@ -56,4 +61,5 @@ class IncomeAndExpenseApi(AbstractIncomeAndExpense):
     def delete(self, income_and_expense_id, **kwargs):
         control = IncomeAndExpenseControl(id=income_and_expense_id, **kwargs)
         control.delete()
+        RedisTool.update_user_version(kwargs['user_id'])
         return ResponseTool.success(message="刪除成功", data=control.response_data)

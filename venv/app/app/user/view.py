@@ -3,7 +3,7 @@ from flask_jwt_extended import unset_jwt_cookies, jwt_required, get_jwt_identity
 from flask_login import login_user, current_user, login_required, logout_user
 
 from . import user_bp
-from .. import db, jwt, login_manager
+from .. import db, jwt, login_manager,redis
 from .form import LoginForm, RegisterForm, UserInfoForm
 from .control import UserControl
 from ..utils import flash_form_error, JwtTool, CustomizeError
@@ -27,7 +27,7 @@ def login3():
         form.remember_me.data,
         lambda user_id: redirect(url_for('six_jar.savings'))
     )
-    flash("登入成功", category='info')
+    redis.incr(f'login_times_for_user:{current_user.id}')
     return resp
 
 

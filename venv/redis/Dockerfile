@@ -1,5 +1,5 @@
 # 使用官方 Redis 映像檔作為基礎映像檔
-FROM redis
+FROM --platform=$TARGETPLATFORM redis
 
 # 複製自己的 redis.conf 檔案到映像檔中的 /usr/local/etc/redis/ 目錄下
 COPY redis.conf /usr/local/etc/redis/redis.conf

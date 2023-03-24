@@ -17,6 +17,7 @@ class Chart{
     this.constantObject = constantObject
 }
   async execute(){
+   
     let chartRequest = ChartRequest.create(this.constantObject)
     let chartResponse = await Util.sendAjaxAndResonseToAlert(chartRequest, this.constantObject)
     if (chartResponse.is_success){
@@ -27,6 +28,7 @@ class Chart{
     else{
       Util.addAlert("發生錯誤，繪圖失敗！")
     }
+
 
   } 
 }

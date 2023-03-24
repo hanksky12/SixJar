@@ -24,7 +24,7 @@ export class Util {
     id.value = 'alert'
     wrapper.setAttributeNode(id)
     let icon
-    if (type == 'primary') //type= danger, primary, warning, success
+    if (type === 'primary') //type= danger, primary, warning, success
       icon = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg>'
     else
       icon = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>'
@@ -45,7 +45,7 @@ export class Util {
     let ca = document.cookie.split(';');
     for (let i = 0; i < ca.length; i++) {
       let c = ca[i].trim();
-      if (c.indexOf(name) == 0) {
+      if (c.indexOf(name) === 0) {
         return c.substring(name.length, c.length);
       }
     }
@@ -88,7 +88,7 @@ export class Util {
   }
 
   static createRequest(url, method, httpHeaders, body) {
-    if (body == undefined) {
+    if (body === undefined) {
       return new Request(url, {
         method: method,
         headers: new Headers(httpHeaders)
@@ -121,22 +121,29 @@ export class ConditionForm extends AbstractForm{
       super('condition-form')
   }
   check(event){
-    if (this.autoBootstrapValid(event)== false) {return false}
-    if (Util.checkConditionValue() ==false){return false}
+    if (this.autoBootstrapValid(event)=== false) {return false}
+    if (Util.checkConditionValue() === false){return false}
     return true
   }
 }
 
 export class ConditionFlow {
 
-  conditionEvent(conditionObject, successObject, butId = '#search_btn'){
-    $(butId).click((event)=> {
+   conditionEvent(conditionObject, successObject, butId = '#search_btn'){
+    $(butId).click(async (event)=> {
       let toastLiveExample = document.getElementById('liveToast')
       var toast = new bootstrap.Toast(toastLiveExample)
       toast.show()
       Util.removeAlert()
       if (conditionObject.check(event)){
-        successObject.execute()}
+
+        let loading = document.getElementById('loading');
+        console.log(loading)
+        loading.style.display = 'block'
+        
+        await successObject.execute()
+        loading.style.display = 'none'
+        }
       else{
         Util.addAlert("設定的條件，怪怪的呦！", 'danger')}
       }

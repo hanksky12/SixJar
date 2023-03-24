@@ -108,8 +108,6 @@ export class IncomeAndExpenseTable{
             console.log(jqXHR["responseJson"])
             if (status==401) {
                 return this.#refreshToken()}
-            // else if (status==401) {
-            //       return this.#refreshToken()}
             else {
                 return Util.addAlert("表單資料load失敗！", 'danger')}
             }, //更新token

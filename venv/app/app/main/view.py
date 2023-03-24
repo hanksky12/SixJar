@@ -6,10 +6,11 @@ from flask_jwt_extended import \
     set_refresh_cookies, get_jwt, jwt_required
 from webargs.flaskparser import parser, abort
 from werkzeug.exceptions import HTTPException
+from functools import wraps
 
 from . import main_bp
-from .. import db
-from ..utils import CustomizeError
+from .. import db, cache, redis
+from ..utils import CustomizeError, RedisTool
 
 
 @parser.error_handler
@@ -22,14 +23,14 @@ def handle_request_parsing_error(err, req, schema, error_status_code, error_head
     abort(status_code, errors=err.messages)
 
 
-# @main_bp.app_errorhandler(Exception)
-# def handle_exception(e):
-#     # pass through HTTP errors
-#     if isinstance(e, HTTPException):
-#         return e
-#     print(e)
-#     flash(f"內部遇到,未知錯誤,請洽資訊人員修正！", category='danger')
-#     return redirect(url_for('main.index'))
+@main_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    print(e)
+    flash(f"內部遇到,未知錯誤,請洽資訊人員修正！", category='danger')
+    return redirect(url_for('main.index'))
 
 @main_bp.app_errorhandler(CustomizeError)
 def customize_error(err):
@@ -48,5 +49,6 @@ def internal_server_error(err):
 
 
 @main_bp.route('/')
+@RedisTool.is_logged_in_for_cache()
 def index():
     return render_template('main/index.html')

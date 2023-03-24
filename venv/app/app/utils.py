@@ -1,5 +1,9 @@
 from marshmallow import Schema, fields
+import time
+import json
 from flask import flash, current_app, jsonify
+import flask
+import pickle
 from functools import wraps
 from jwt import exceptions
 from flask_apispec import use_kwargs, marshal_with, doc
@@ -12,8 +16,9 @@ from flask_jwt_extended import \
     jwt_required, \
     current_user, \
     verify_jwt_in_request
-
-
+from flask_login import current_user as flask_login_current_user
+import urllib.parse
+from . import cache, redis
 
 
 def flash_form_error(form):
@@ -81,6 +86,7 @@ class DecoratorTool:
         fresh: check jwt_token is fresh
         refresh: check jwt_refresh_token in request
         verify_user: check user_id in (body or query)  is equal to jwt_token or not
+
         """
 
         def outer_wrapper(f):
@@ -114,10 +120,94 @@ class DecoratorTool:
                     print("exceptions.ExpiredSignatureError")
                     print(e)
                     return ResponseTool.bad_request(message="Signature has expired")
-                except Exception as e:
-                    print("exceptions")
-                    print(e)
-                    return current_app.ensure_sync(fn)(*args, **kwargs)
+
+            return decorator
+
+        return wrapper
+
+
+class RedisTool:
+    @staticmethod
+    def update_user_version(user_id):
+        print(f"update_user_version: {user_id}")
+        redis.set(f"user_id:{user_id}", int(time.time()))
+
+    @staticmethod
+    def is_logged_in_for_cache():
+        def wrapper(f):
+            @wraps(f)
+            def decorated_function(*args, **kwargs):
+                def __handle_response(__key):
+                    __response = cache.get(__key)
+                    if not __response:
+                        __response = f(*args, **kwargs)
+                        cache.set(__key, __response)
+                    return __response
+
+                key = 'logged_in_index' if flask_login_current_user.is_authenticated else 'not_logged_in_index'
+                return __handle_response(key)
+
+            return decorated_function
+
+        return wrapper
+
+    @staticmethod
+    def cache(prefix="", key_args=None, version_key="user_id", version_args=["user_id"], timeout=60 * 60):
+        """
+        user version to decide cache is valid or not
+        """
+
+        def wrapper(fn):
+            @wraps(fn)
+            def decorator(*args, **kwargs):
+                key = __create_key(kwargs)
+                v_key = __create_version_key(kwargs)
+                bind_key_version_cache, response_cache = __get_cache_from_redis(key, v_key)
+                if response_cache:
+                    response, this_time_version = __get_response_and_version_from_cache(response_cache)
+                    bind_key_version = int(bind_key_version_cache) if bind_key_version_cache else 0
+                    if this_time_version >= bind_key_version:
+                        print("get data from cache")
+                        return response['data']
+                response = fn(*args, **kwargs)
+                if response:
+                    print(f"set data to cache")
+                    response_cached = __set_response_and_version_to_cache(response)
+                    redis.setex(key, timeout, response_cached)
+                return response
+
+            def __set_response_and_version_to_cache(response):
+                response_cached = json.dumps({'data': response, 'version': int(time.time())})
+                return response_cached
+
+            def __get_response_and_version_from_cache(response_cache):
+                response = json.loads(response_cache)
+                return response, response['version']
+
+            def __get_cache_from_redis(key, v_key):
+                pipe = redis.pipeline()
+                pipe.get(key)
+                pipe.get(v_key)
+                ret = pipe.execute()
+                response = ret[0]
+                bind_key_version = ret[1]
+                return bind_key_version, response
+
+            def __create_version_key(kwargs):
+                v_key = version_key
+                for item in version_args:
+                    v_key += ":{}".format(kwargs[item])
+
+                print(f"v_key: {v_key}")
+                return v_key
+
+            def __create_key(kwargs):
+                if key_args is None:
+                    key = str(prefix) + flask.request.path + '?' + '&'.join([f"{k}={v}" for k, v in kwargs.items()])
+                else:
+                    key = str(prefix) + str(key_args)
+                print("key:{}".format(key))
+                return key
 
             return decorator
 

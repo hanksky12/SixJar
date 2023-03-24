@@ -1,4 +1,3 @@
-
 from werkzeug.exceptions import HTTPException
 
 from . import api_bp, api
@@ -21,17 +20,17 @@ def token_not_fresh_callback(jwt_header, jwt_payload):
 
 @api_bp.errorhandler(CustomizeError)
 def customize_error(e):
-    print("api customize_error")
+    print("view api customize_error")
     return ResponseTool.params_error(message=f"失敗,{e}")
 
 
-# @api_bp.app_errorhandler(Exception)
-# def handle_exception(e):
-#     # pass through HTTP errors
-#     print("api handle_exception")
-#     if isinstance(e, HTTPException):
-#         return e
-#
-#     print(e)
-#     return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
+@api_bp.app_errorhandler(Exception)
+def handle_exception(e):
+    # pass through HTTP errors
+    print("view api handle_exception")
+    if isinstance(e, HTTPException):
+        return e
+
+    print(e)
+    return ResponseTool.inside_error(message=f"失敗,內部邏輯錯誤")
 

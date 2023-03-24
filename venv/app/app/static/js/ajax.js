@@ -28,7 +28,7 @@ export class Ajax {
       responseData = await Ajax.send(request)
     } catch (error) {
       console.log(error.message)
-      if (error.message == "Token has expired" || error.message == "Signature has expired") {
+      if (error.message === "Token has expired" || error.message === "Signature has expired") {
         await Ajax.send(tokenRequest)
         request = await Ajax.updateCsrfToken(httpHeaders, cloneRequest) // Request 用過也不能當基礎
         responseData = await Ajax.send(request)
@@ -66,6 +66,9 @@ export class Ajax {
       } else if (response.hasOwnProperty("message")) {
         console.log("解析message")
         message = response.message
+      } else if (response.hasOwnProperty("messages")) {
+        console.log("解析messages")
+        message = response.messages.querystring.target_currency
       } else {
         console.log("解析errors.json ")
         message = response.errors.json
@@ -76,7 +79,7 @@ export class Ajax {
 
   static successHandling(response) {
     console.log("successHandling")
-    if (response.message == "token 更新成功") {
+    if (response.message === "token 更新成功") {
       console.log("更新成功") //單純更新token 不定義responseData
     } else {
       let responseData = new ResponseData(response.data, JSON.stringify(response.message))

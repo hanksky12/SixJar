@@ -34,5 +34,4 @@ class TaskApi(MethodResource):
 
         return Response(generate(), mimetype='text/event-stream')
 
-    def delete(self):
-        pass
+

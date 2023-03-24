@@ -2,7 +2,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import event
 import os
 
-from .. import db
+from .. import db,cache
 from ..extension import FlaskApp
 from ..config import config
 from ..db_init_data import jar_dict
@@ -49,6 +49,7 @@ with FlaskApp().app.app_context():
 
 class Jars:
     @staticmethod
+    # @cache.cached(key_prefix='JarsNames')
     def names():
         with FlaskApp().app.app_context():
             return [jar.name for jar in Jar.query.order_by(Jar.id).all()]

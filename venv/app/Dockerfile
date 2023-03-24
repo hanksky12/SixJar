@@ -1,15 +1,12 @@
-# syntax=docker/dockerfile:1.4
-FROM --platform=$BUILDPLATFORM python:3.9-buster AS builder
+FROM --platform=$TARGETPLATFORM python:3.9-buster AS builder
 
 WORKDIR /sixJar
 
 COPY requirements.txt /sixJar
-RUN <<EOF
-    --mount=type=cache,target=/root/.cache/pip
-    apt-get update
-    apt-get install vim
-    pip3 install -r requirements.txt
-EOF
+RUN  apt-get update && \
+     apt-get install -y vim && \
+     pip3 install -r requirements.txt
+
 
 COPY app.py /sixJar
 COPY ./app /sixJar/app
@@ -18,16 +15,3 @@ COPY ./app /sixJar/app
 CMD python3 app.py
 LABEL image_name="sixjar-web"
 LABEL version="1.0"
-FROM builder as dev-envs
-
-RUN <<EOF
-apk update
-apk add git
-EOF
-
-RUN <<EOF
-addgroup -S docker
-adduser -S --shell /bin/bash --ingroup docker vscode
-EOF
-# install Docker tools (cli, buildx, compose)
-COPY --from=gloursdocker/docker / /

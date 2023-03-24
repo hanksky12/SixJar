@@ -3,6 +3,8 @@ import datetime
 import sqlalchemy
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+import json
+import redis
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_user = os.getenv("DB_USER", "")
@@ -12,7 +14,9 @@ db_host = os.getenv("DB_HOST", "")
 unix_socket_path = os.getenv("INSTANCE_UNIX_SOCKET", "")
 
 
-# print(f'mysql+pymysql://{db_user}:{db_pass}@{db_host}:3306/{db_name}')
+class RedisConfig:
+    REDIS_URL = 'redis://redis:6379/0' if os.getenv(
+        "PYTHON_WEB_CONFIG") == "docker_test" else 'redis://localhost:6379/0'
 
 
 class BaseConfig:
@@ -27,9 +31,10 @@ class BaseConfig:
     JWT_REFRESH_COOKIE_PATH = '/api/v1/token/refresh'  # 只有在這個網址下 才送出jwt refresh cookie
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=20)  # 過期時間
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)  # 過期時間
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'  # 往哪邊發送
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # 到哪邊拿
+    CELERY_BROKER_URL = RedisConfig.REDIS_URL  # 往哪邊發送
+    CELERY_RESULT_BACKEND = RedisConfig.REDIS_URL  # 到哪邊拿
     CELERY_TIMEZONE = 'Asia / Taipei'
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
 
     APISPEC_SPEC = APISpec(
         title='🐾六個罐子🐾Api文件',
@@ -57,32 +62,8 @@ class LocalTestConfig(BaseConfig):
     JWT_SECRET_KEY = 'THIS IS Fix'
     JWT_COOKIE_SECURE = False
 
-
-class CloudTestConfig(BaseConfig):
-    SERVER_NAME = 'localhost:8080'
-    SQLALCHEMY_DATABASE_URI = sqlalchemy.engine.url.URL.create(
-        drivername="mysql+pymysql",
-        username=db_user,
-        password=db_pass,
-        database=db_name,
-        query={"unix_socket": unix_socket_path},
-    )
-
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_size": 5,
-        "max_overflow": 2,
-        "pool_timeout": 30,
-        "pool_recycle": 1800
-    }  # create_engine 的參數
-    DEBUG = False
-    SECRET_KEY = os.urandom(10)
-    JWT_SECRET_KEY = os.urandom(10)
-    JWT_COOKIE_SECURE = True
-
-
-class DockerTestConfig(BaseConfig):
+class DockerConfig(BaseConfig):
     HOST = '0.0.0.0'
-    PORT = '8080'
     # db_host 用docker 裡面db的名城
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{db_user}:{db_pass}@{db_host}:3306/{db_name}'
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -90,14 +71,11 @@ class DockerTestConfig(BaseConfig):
         "max_overflow": 2,
         "pool_timeout": 30,
         "pool_recycle": 1800
-    }  # create_engine 的參數
+    }
     DEBUG = False
     SECRET_KEY = os.urandom(10)
     JWT_SECRET_KEY = os.urandom(10)
     # JWT_COOKIE_SECURE = True
-    CELERY_BROKER_URL = 'redis://redis:6379/0'  # 往哪邊發送  'redis://docker_redis_name:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://redis:6379/0'  # 到哪邊拿
-    REDIS_URL = 'redis://redis:6379/0'
 
 
 class ProductionConfig(BaseConfig):
@@ -110,7 +88,5 @@ class ProductionConfig(BaseConfig):
 config = {
     'development': DevelopmentConfig,
     "local_test": LocalTestConfig,
-    "test": CloudTestConfig,
-    "docker_test": DockerTestConfig,
-    'production': ProductionConfig,
+    "docker_test": DockerConfig,
 }

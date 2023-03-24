@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from .model import IncomeAndExpense, Savings, Jar, Jars
 from ..user.model import User
-from .. import db, celery
+from .. import db, celery, cache
 from ..utils import CustomizeError
 
 
@@ -25,6 +25,7 @@ class DataColumn:
 # saving, query, crud
 class IncomeAndExpenseControl:
     def __init__(self, **kwargs):
+
         self.__kwargs = kwargs
         self.__response_data = copy.deepcopy(kwargs)
         self.__saving = None
@@ -88,10 +89,26 @@ class IncomeAndExpenseControl:
                                    }, inplace=True)
         return df_records
 
-    def query_list(self) -> object:
+    def query_list(self):
         income_and_expense_object = self.__query_income_and_expense_object()
         page_objs = self.__make_pagination(income_and_expense_object)
-        return [row._mapping for row in page_objs.items], page_objs.total
+        data_dict_list = self.__extract_data_to_dict_list(page_objs,[])
+        # print(data_dict_list)
+        return data_dict_list, page_objs.total
+
+    def __extract_data_to_dict_list(self, page_objs, final_list):
+        # final_list = []
+        for row in page_objs.items:
+            __dict = {
+                'id': row['id'],
+                'income_and_expense': row['income_and_expense'],
+                'money': row['money'],
+                'date': row['date'].isoformat(),
+                'remark': row['remark'],
+                'jar_name': row['jar_name']
+            }
+            final_list.append(__dict)
+        return final_list
 
     def __query_income_and_expense_object(self):
         order_by = self.__create_order_by()
